@@ -1,0 +1,34 @@
+---
+import CheckLayout from "../layouts/CheckLayout.astro";
+import { SITE } from "../lib/site";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Bouwjaar auto opvragen",
+  description: "Ontdek snel het bouwjaar van een auto via het kenteken. Gratis toegang tot RDW-gegevens inclusief bouwjaar, kilometerstand en meer.",
+  url: `${SITE.url}/bouwjaar-auto/`,
+};
+---
+
+<CheckLayout
+  title="Bouwjaar auto opvragen via kenteken | Kentekencheck.net"
+  description="Ontdek snel het bouwjaar van een auto via het kenteken. Gratis toegang tot RDW-gegevens inclusief bouwjaar, kilometerstand en meer."
+  heading="Bouwjaar auto opvragen"
+  subheading="Controleer het bouwjaar van elk voertuig via het kentekennummer."
+  canonical={`${SITE.url}/bouwjaar-auto/`}
+  schema={schema}
+>
+  <h2>Bouwjaar auto</h2>
+  <p>Het bouwjaar van een auto is vaker het eerste waar men naar kijkt of vraagt bij de aanschaf van een auto. Het bouwjaar geeft immers het aantal jaartjes aan die de auto in het verkeer heeft doorgebracht en is het een belangrijke graadmeter om de conditie van de auto in te schatten. Er wordt namelijk gewoonlijk van uitgegaan dat een auto met een hoger bouwjaar over het algemeen in een betere conditie zal verkeren dan een ouder auto. Krijg met de kenteken check direct antwoord op de vraag 'Hoe oud is mijn auto?'.</p>
+
+  <h2>Leeftijd auto</h2>
+  <p>Natuurlijk speelt ook de kilometerstand een belangrijke rol in de staat waarin de auto zich bevindt, maar zegt het bouwjaar ook meer over de complete staat van de auto. Zo zal een oudere auto zeker meer invloeden van het weer moeten verwerken en zijn bepaalde delen van de auto zoals rubbers en het interieur ook onderhevig aan uitdroging. Een auto met een hoger bouwjaar zal dus daarom meer opbrengen dan een exact zelfde model met een lager bouwjaar, ook al heeft de tweede minder kilometers gereden.</p>
+
+  <h2>Bouwjaar auto opzoeken</h2>
+  <p>Omdat het bouwjaar zo bepalend kan zijn voor de prijs en vele modellen auto's over een aantal jaren heen worden geproduceerd kan het weleens gebeuren dat er wordt geprobeerd om te frauderen met het bouwjaar. Gelukkig zijn er websites te vinden waar je geheel gratis toegang kunt krijgen tot de RDW voertuig database en simpel door het invoeren van het kentekennummer alle informatie zoals het bouwjaar en de kilometerstand kunt vinden. Voordat je dus overgaat tot de aanschaf van een tweedehandse auto is het middels deze manier mogelijk om het bouwjaar auto zelf te achterhalen, dit is mogelijk voor elke auto. Zo kun je bijvoorbeeld van oude kentekens bouwjaar achterhalen, maar ook van nieuwe kentekens. Zo vind je in de RDW kenteken database bijvoorbeeld ook een kenteken bouwjaar lijst.</p>
+
+  <p>Laat bij een verschil in bouwjaar tussen de RDW database en het nummerbewijs je niet ompraten omdat de RDW gegevens worden ingevoerd bij de eerste registratie van het voertuig in Nederland en die altijd correct dienen te zijn.</p>
+
+  <p>Dankzij Kentekencheck.net kom jij niet voor verrassingen te staan. Krijg direct toegang tot RDW OVI check, schadeverleden, kilometerstand, aantal eigenaren en actuele dagwaarde.</p>
+</CheckLayout>

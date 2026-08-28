@@ -1,0 +1,78 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../lib/site";
+---
+
+<BaseLayout
+  title="Over ons | Kentekencheck.net"
+  description="Kentekencheck.net is hét gratis platform voor kentekeninfo in Nederland. Lees meer over wie we zijn en wat we doen."
+  canonical={`${SITE.url}/over-ons/`}
+>
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <h1>Over ons</h1>
+      <p>Kentekencheck.net is hét gratis platform voor kentekeninfo in Nederland.</p>
+    </div>
+  </section>
+
+  <section class="page-body">
+    <div class="page-container">
+      <div class="kc-prose">
+        <h2>Wie zijn wij?</h2>
+        <p>Kentekencheck.net is een onafhankelijk platform dat gratis toegang biedt tot kentekengegevens van Nederlandse voertuigen. Wij geloven dat iedereen het recht heeft om te weten wat hij koopt, zonder verborgen kosten of gedwongen registraties.</p>
+
+        <h2>Onze missie</h2>
+        <p>Onze missie is simpel: transparantie op de tweedehands automarkt. Door consumenten eenvoudig en gratis toegang te geven tot voertuighistorie, helpen we miskopers te voorkomen en fraude op te sporen.</p>
+
+        <h2>Wat bieden wij?</h2>
+        <ul>
+          <li>100% gratis kentekencheck, geen account vereist</li>
+          <li>Direct inzicht in schadeverleden, kilometerstand en APK</li>
+          <li>Eigenaarhistorie en voertuigspecificaties</li>
+          <li>Checks voor Nederlandse, Belgische en Duitse kentekens</li>
+        </ul>
+
+        <h2>Betrouwbaarheid</h2>
+        <p>Onze data is afkomstig van officiële bronnen, waaronder de RDW (Rijksdienst voor het Wegverkeer). Dit garandeert actuele en betrouwbare voertuiginformatie.</p>
+
+        <h2>Contact</h2>
+        <p>Heb je vragen of suggesties? Neem gerust <a href="/contact/">contact</a> met ons op. We staan altijd open voor feedback om onze dienst verder te verbeteren.</p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-hero {
+    background: var(--kc-black);
+    color: #fff;
+    padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+    border-bottom: 2px solid var(--kc-yellow);
+  }
+
+  .page-hero-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .page-hero p {
+    color: #a0a0a8;
+    font-size: 1.1rem;
+  }
+
+  .page-body {
+    padding: 3rem 1.25rem 4rem;
+  }
+
+  .page-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+</style>

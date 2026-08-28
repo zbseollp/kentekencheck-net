@@ -1,0 +1,231 @@
+﻿---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../lib/site";
+---
+
+<BaseLayout
+  title="Contact | Kentekencheck.net"
+  description="Neem contact op met Kentekencheck.net. Vragen, suggesties of feedback? We reageren zo snel mogelijk."
+  canonical={`${SITE.url}/contact/`}
+>
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <h1>Contact</h1>
+      <p>Vragen, suggesties of feedback? Laat het ons weten.</p>
+    </div>
+  </section>
+
+  <section class="contact-body">
+    <div class="contact-container">
+      <div class="contact-form-wrap">
+        <form
+          id="contact-form"
+          action="https://api.web3forms.com/submit"
+          method="POST"
+          novalidate
+        >
+          <input type="hidden" name="access_key" value="281f477d-7744-407d-9b6a-9b8d9c6abe3c" />
+          <input type="hidden" name="subject" value="Contactformulier Kentekencheck.net" />
+          <input type="hidden" name="from_name" value="Kentekencheck.net" />
+          <input type="hidden" name="redirect" data-redirect value="" />
+          <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off" />
+
+          <div class="form-group">
+            <label for="name">Naam <span aria-hidden="true">*</span></label>
+            <input type="text" id="name" name="name" required autocomplete="name" placeholder="Jouw naam" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">E-mailadres <span aria-hidden="true">*</span></label>
+            <input type="email" id="email" name="email" required autocomplete="email" placeholder="jouw@email.nl" />
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Onderwerp</label>
+            <input type="text" id="subject" name="subject_field" placeholder="Waar gaat je bericht over?" />
+          </div>
+
+          <div class="form-group">
+            <label for="message">Bericht <span aria-hidden="true">*</span></label>
+            <textarea id="message" name="message" required rows="5" placeholder="Schrijf hier je bericht..." minlength="10"></textarea>
+          </div>
+
+          <div id="h-captcha" class="h-captcha" data-captcha="true"></div>
+
+          <button type="submit" class="submit-btn">Verstuur bericht</button>
+
+          <p id="form-status" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <div class="contact-info">
+        <h2>Veelgestelde vragen</h2>
+        <div class="faq-item">
+          <h3>Hoe snel ontvang ik een reactie?</h3>
+          <p>We streven ernaar om binnen 2 werkdagen te reageren op alle berichten.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Klopt er iets niet aan de kentekendata?</h3>
+          <p>De data is afkomstig van de RDW. Voor correcties in de officiÃ«le kentekenregistratie kun je contact opnemen met de <a href="https://www.rdw.nl" target="_blank" rel="noopener noreferrer">RDW</a> zelf.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Kan ik samenwerken of adverteren?</h3>
+          <p>Voor partnerships en advertentiemogelijkheden kun je ons contactformulier invullen met je voorstel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Set redirect URL dynamically
+  const redirectInput = document.querySelector('[data-redirect]') as HTMLInputElement;
+  if (redirectInput) {
+    redirectInput.value = window.location.origin + '/contact/bedankt/';
+  }
+
+  // Lazy-load web3forms/hcaptcha script on interaction
+  const form = document.getElementById('contact-form') as HTMLFormElement;
+  let captchaLoaded = false;
+  function loadCaptcha() {
+    if (captchaLoaded) return;
+    captchaLoaded = true;
+    const s = document.createElement('script');
+    s.src = 'https://web3forms.com/client/script.js';
+    s.async = true;
+    s.defer = true;
+    document.head.appendChild(s);
+  }
+
+  if (form) {
+    form.addEventListener('focusin', loadCaptcha, { once: true });
+    form.addEventListener('pointerenter', loadCaptcha, { once: true });
+    form.addEventListener('submit', loadCaptcha);
+  }
+</script>
+
+<style>
+  .page-hero {
+    background: var(--kc-black);
+    color: #fff;
+    padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+    border-bottom: 2px solid var(--kc-yellow);
+  }
+
+  .page-hero-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .page-hero h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+
+  .page-hero p { color: #a0a0a8; font-size: 1.1rem; }
+
+  .contact-body {
+    padding: 3rem 1.25rem 4rem;
+  }
+
+  .contact-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 4rem;
+    align-items: start;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--kc-black);
+    margin-bottom: 0.4rem;
+  }
+
+  label span { color: #c0392b; }
+
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    width: 100%;
+    border: 1.5px solid var(--kc-grey-300);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--kc-ink);
+    background: #fff;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--kc-yellow);
+    box-shadow: 0 0 0 3px rgba(245,197,24,0.15);
+  }
+
+  textarea { resize: vertical; min-height: 120px; }
+
+  .submit-btn {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 0.85rem 2rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .submit-btn:hover { background: var(--kc-yellow-dark); }
+  .submit-btn:active { transform: scale(0.98); }
+
+  #form-status {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .contact-info h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: var(--kc-black);
+  }
+
+  .faq-item {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--kc-grey-100);
+  }
+
+  .faq-item:last-child { border-bottom: none; }
+
+  .faq-item h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--kc-black);
+    margin-bottom: 0.4rem;
+  }
+
+  .faq-item p { font-size: 0.875rem; color: #55555d; line-height: 1.65; }
+  .faq-item a { color: var(--kc-blue); }
+
+  @media (max-width: 768px) {
+    .contact-container { grid-template-columns: 1fr; }
+  }
+</style>
+

@@ -1,0 +1,29 @@
+{
+  "name": "kentekencheck-net",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "deploy": "npm run build && npx wrangler deploy",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "devDependencies": {
+    "wrangler": "^4.110.0"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.13",
+    "@astrojs/mdx": "^4.3.14",
+    "@astrojs/sitemap": "^3.7.3",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/montserrat": "^5.2.8",
+    "@tailwindcss/vite": "^4.3.2",
+    "astro": "^5.18.2",
+    "astro-compress": "^2.4.1",
+    "tailwindcss": "^4.3.2"
+  }
+}

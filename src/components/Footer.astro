@@ -1,0 +1,183 @@
+---
+import { SITE, NAV_AUTOINFO } from "@lib/site";
+const year = new Date().getFullYear();
+---
+
+<footer class="kc-footer">
+  <div class="kc-footer-inner">
+    <div class="kc-footer-brand">
+      <a href="/" class="kc-logo" aria-label="Home">
+        <div class="kc-logo-icon" aria-hidden="true">KC</div>
+        <span class="kc-logo-name">KENTEKENCHECK.NET</span>
+      </a>
+      <p>{SITE.tagline} Schadeverleden, kilometerstand, APK en eigenaren. Direct in je browser.</p>
+    </div>
+
+    <div class="kc-footer-col">
+      <h3>Navigatie</h3>
+      <ul>
+        <li><a href="/">Kentekencheck.net</a></li>
+        <li><a href="/over-ons/">Over ons</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/zoeken/">Kenteken zoeken</a></li>
+        <li><a href="/sitemap/">Sitemap</a></li>
+      </ul>
+    </div>
+
+    <div class="kc-footer-col">
+      <h3>Tools</h3>
+      <ul>
+        <li><a href="/contact/">Contact</a></li>
+        <li><a href="/apk-keuring/">APK check</a></li>
+        <li><a href="/anwb-autowaarde/">Autowaarde check</a></li>
+        <li><a href="/schadeverleden-auto/">Schadeverleden</a></li>
+        <li><a href="/kilometerstand-controleren/">Kilometerstand check</a></li>
+      </ul>
+    </div>
+
+    <div class="kc-footer-col">
+      <h3>Auto informatie</h3>
+      <ul>
+        {NAV_AUTOINFO.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="kc-footer-bottom">
+    <p>© <span data-current-year>{year}</span>&nbsp;Kentekencheck.net · Alle rechten voorbehouden.</p>
+    <p class="kc-footer-sub">Gemaakt met passie voor automobielen.</p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll("[data-current-year]").forEach(
+    (el) => (el.textContent = new Date().getFullYear().toString())
+  );
+</script>
+
+<style>
+  .kc-footer {
+    background: var(--kc-black);
+    color: #a0a0aa;
+    border-top: 2px solid var(--kc-yellow);
+    padding-top: 3rem;
+  }
+
+  .kc-footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem 2.5rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 2.5rem;
+  }
+
+  .kc-footer-brand .kc-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    margin-bottom: 0.85rem;
+  }
+
+  .kc-logo-icon {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 0.9rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.03em;
+    flex-shrink: 0;
+  }
+
+  .kc-logo-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #fff;
+    letter-spacing: 0.04em;
+  }
+
+  .kc-footer-brand p {
+    font-size: 0.875rem;
+    line-height: 1.65;
+    color: #888890;
+    max-width: 36ch;
+  }
+
+  .kc-footer-col h3 {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--kc-yellow);
+    margin-bottom: 1rem;
+  }
+
+  .kc-footer-col ul { list-style: none; }
+  .kc-footer-col li { margin-bottom: 0.5rem; }
+  .kc-footer-col a {
+    color: #888890;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: color 0.15s;
+  }
+  .kc-footer-col a:hover { color: var(--kc-yellow); }
+
+  .kc-footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.07);
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #909098;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .kc-footer-sub { display: flex; align-items: center; gap: 0.5rem; }
+
+  .kc-cookie-btn {
+    background: none;
+    border: none;
+    color: #909098;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    font-family: inherit;
+  }
+  .kc-cookie-btn:hover { color: var(--kc-yellow); }
+
+  @media (max-width: 1024px) {
+    .kc-footer-inner {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+    .kc-footer-col:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .kc-footer-inner {
+      grid-template-columns: 1fr;
+      gap: 1.75rem;
+    }
+    .kc-footer-bottom {
+      flex-direction: column;
+      text-align: center;
+    }
+  }
+</style>

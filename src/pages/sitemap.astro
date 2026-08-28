@@ -1,0 +1,161 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { NAV_KENTEKENCHECKS, NAV_WAARDECHECKS, SITE } from "../lib/site";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const NAV_ZOEKEN = [
+  { label: "Kenteken zoeken", href: "/zoeken/" },
+  { label: "Volkswagen", href: "/zoeken/volkswagen/" },
+  { label: "Peugeot", href: "/zoeken/peugeot/" },
+  { label: "Toyota", href: "/zoeken/toyota/" },
+  { label: "Ford", href: "/zoeken/ford/" },
+  { label: "Renault", href: "/zoeken/renault/" },
+  { label: "Opel", href: "/zoeken/opel/" },
+  { label: "Mercedes-Benz", href: "/zoeken/mercedes-benz/" },
+  { label: "BMW", href: "/zoeken/bmw/" },
+  { label: "Kia", href: "/zoeken/kia/" },
+  { label: "Volvo", href: "/zoeken/volvo/" },
+  { label: "Citroën", href: "/zoeken/citroen/" },
+  { label: "Audi", href: "/zoeken/audi/" },
+  { label: "Suzuki", href: "/zoeken/suzuki/" },
+  { label: "Fiat", href: "/zoeken/fiat/" },
+  { label: "Hyundai", href: "/zoeken/hyundai/" },
+  { label: "Skoda", href: "/zoeken/skoda/" },
+];
+
+const NAV_AUTOINFO = [
+  { label: "Auto importeren Duitsland", href: "/auto-importeren-duitsland/" },
+  { label: "Auto naar de sloop", href: "/auto-naar-de-sloop/" },
+  { label: "Bijtelling berekenen", href: "/bijtelling-berekenen-via-kenteken/" },
+  { label: "Bouwjaar auto", href: "/bouwjaar-auto/" },
+  { label: "BPM berekenen", href: "/bpm-berekenen/" },
+  { label: "Kenteken overschrijven", href: "/kenteken-overschrijven/" },
+  { label: "Kenteken voorspellen", href: "/kenteken-voorspellen/" },
+  { label: "Laatst uitgegeven kenteken", href: "/laatst-uitgegeven-kenteken/" },
+  { label: "Meldcode auto", href: "/meldcode-auto/" },
+  { label: "Wegenbelasting op kenteken", href: "/wegenbelasting-op-kenteken/" },
+];
+---
+
+<BaseLayout
+  title="Sitemap | Kentekencheck.net"
+  description="Overzicht van alle pagina's op Kentekencheck.net."
+  canonical={`${SITE.url}/sitemap/`}
+>
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <h1>Sitemap</h1>
+    </div>
+  </section>
+
+  <section class="sitemap-body">
+    <div class="sitemap-container">
+      <div class="sitemap-col">
+        <h2>Hoofdpagina's</h2>
+        <ul>
+          <li><a href="/">Kentekencheck.net</a></li>
+          <li><a href="/over-ons/">Over ons</a></li>
+          <li><a href="/blog/">Blog</a></li>
+          <li><a href="/contact/">Contact</a></li>
+        </ul>
+
+        <h2>Kentekenchecks</h2>
+        <ul>
+          {NAV_KENTEKENCHECKS.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+
+        <h2>Waardechecks</h2>
+        <ul>
+          {NAV_WAARDECHECKS.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+
+        <h2>Kenteken zoeken</h2>
+        <ul>
+          {NAV_ZOEKEN.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+
+        <h2>Auto informatie</h2>
+        <ul>
+          {NAV_AUTOINFO.map((item) => (
+            <li><a href={item.href}>{item.label}</a></li>
+          ))}
+        </ul>
+      </div>
+
+      <div class="sitemap-col">
+        <h2>Blog ({posts.length} artikelen)</h2>
+        <ul>
+          {posts.map((post) => (
+            <li><a href={`/${post.id}/`}>{post.data.title}</a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-hero {
+    background: var(--kc-black);
+    color: #fff;
+    padding: clamp(2.5rem, 5vw, 4rem) 1.25rem;
+    border-bottom: 2px solid var(--kc-yellow);
+  }
+
+  .page-hero-inner { max-width: 800px; margin: 0 auto; }
+
+  .page-hero h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+
+  .sitemap-body { padding: 3rem 1.25rem 4rem; }
+
+  .sitemap-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--kc-yellow);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+    margin: 1.75rem 0 0.75rem;
+  }
+
+  h2:first-child { margin-top: 0; }
+
+  ul { list-style: none; }
+  li { border-bottom: 1px solid var(--kc-grey-100); }
+  a {
+    display: block;
+    padding: 0.5rem 0;
+    color: var(--kc-blue);
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.15s;
+  }
+  a:hover { color: var(--kc-yellow-dark); }
+
+  @media (max-width: 640px) {
+    .sitemap-container { grid-template-columns: 1fr; }
+  }
+</style>

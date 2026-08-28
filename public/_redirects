@@ -1,0 +1,16 @@
+# WP system paths → 301 naar 404 pagina
+/wp-admin/*        /404  301
+/wp-login.php      /404  301
+/xmlrpc.php        /404  301
+/wp-content/*      /404  301
+/wp-json/*         /404  301
+/author/*          /404  301
+/feed/             /404  301
+/feed/*            /404  301
+
+# Sitemap XML alias
+/sitemap.xml       /sitemap-index.xml  301
+
+# Blog posts: verwijder /blog/ prefix (WP URL structuur herstellen)
+/blog/:slug/       /:slug/  301
+/blog/:slug        /:slug/  301

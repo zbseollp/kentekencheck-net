@@ -1,0 +1,95 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const { merk } = Astro.params;
+const merkDecoded = decodeURIComponent((merk ?? "").replace(/-/g, " ")).toUpperCase();
+
+if (!merkDecoded) return Astro.redirect("/zoeken/");
+
+type ModelCount = { handelsbenaming: string; count: string };
+
+let modellen: ModelCount[] = [];
+let fout = false;
+
+try {
+  const res = await fetch(
+    `https://opendata.rdw.nl/resource/m9d7-ebf2.json?$select=handelsbenaming,count(*)%20as%20count&$where=merk=%27${encodeURIComponent(merkDecoded)}%27%20AND%20handelsbenaming%20IS%20NOT%20NULL&$group=handelsbenaming&$order=count%20desc&$limit=200`
+  );
+  if (res.ok) modellen = await res.json() as ModelCount[];
+} catch {
+  fout = true;
+}
+
+if (!fout && modellen.length === 0) return Astro.redirect("/zoeken/");
+
+function modelSlug(model: string) {
+  return encodeURIComponent(model.toLowerCase().replace(/\s+/g, "-"));
+}
+
+const title = `${merkDecoded} kenteken opzoeken op model | Kentekencheck.net`;
+const description = `Bekijk alle ${merkDecoded} modellen geregistreerd in Nederland. Klik een model aan om de bijbehorende kentekens te bekijken.`;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="zo-hero">
+    <div class="zo-hero-inner">
+      <nav class="zo-breadcrumb" aria-label="Breadcrumb">
+        <a href="/zoeken/">Merken</a>
+        <span>›</span>
+        <span>{merkDecoded}</span>
+      </nav>
+      <h1>{merkDecoded}</h1>
+      <p class="zo-hero-sub">Kies een model om de kentekens te bekijken.</p>
+    </div>
+  </div>
+
+  <div class="zo-body">
+    <div class="zo-container">
+      <h2 class="zo-section-title">Modellen ({modellen.length})</h2>
+      {fout ? (
+        <p class="zo-fout">RDW-data tijdelijk niet beschikbaar.</p>
+      ) : (
+        <div class="zo-merk-grid">
+          {modellen.map(m => (
+            <a href={`/zoeken/${merk}/${modelSlug(m.handelsbenaming)}/`} class="zo-merk-card">
+              <span class="zo-merk-naam">{m.handelsbenaming}</span>
+              <span class="zo-merk-count">{parseInt(m.count).toLocaleString("nl-NL")} kentekens</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .zo-hero {
+    background: var(--kc-black);
+    background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 20px);
+    padding: clamp(2rem, 4vw, 3.5rem) 1.25rem;
+    color: #fff;
+  }
+  .zo-hero-inner { max-width: 1100px; margin: 0 auto; }
+  .zo-breadcrumb { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: #606068; margin-bottom: 0.75rem; }
+  .zo-breadcrumb a { color: var(--kc-yellow); text-decoration: none; }
+  .zo-breadcrumb a:hover { text-decoration: underline; }
+  .zo-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+  .zo-hero-sub { color: #a0a0a8; }
+
+  .zo-body { padding: 2rem 1.25rem 4rem; background: var(--kc-grey-50); }
+  .zo-container { max-width: 1100px; margin: 0 auto; }
+  .zo-section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--kc-blue); margin-bottom: 1.25rem; }
+  .zo-fout { color: #c0392b; }
+  .zo-merk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; }
+  .zo-merk-card {
+    display: flex; flex-direction: column; gap: 0.2rem;
+    padding: 0.85rem 1rem; background: #fff;
+    border: 1px solid var(--kc-grey-100); border-radius: 10px;
+    text-decoration: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .zo-merk-card:hover { border-color: var(--kc-yellow); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .zo-merk-naam { font-weight: 700; color: var(--kc-black); font-size: 0.9rem; }
+  .zo-merk-count { font-size: 0.75rem; color: #909098; }
+</style>

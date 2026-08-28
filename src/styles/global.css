@@ -1,0 +1,128 @@
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/montserrat/wght.css";
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Inter Fallback";
+  src: local("Arial");
+  size-adjust: 107%;
+  ascent-override: 90%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Montserrat Fallback";
+  src: local("Arial Black");
+  size-adjust: 94%;
+  ascent-override: 95%;
+  descent-override: 20%;
+  line-gap-override: 0%;
+}
+
+@theme {
+  --color-kc-black: #0f0f12;
+  --color-kc-ink: #1a1a1d;
+  --color-kc-yellow: #f5c518;
+  --color-kc-yellow-dark: #d9a900;
+  --color-kc-blue: #003399;
+  --color-kc-grey-50: #f6f6f7;
+  --color-kc-grey-100: #ebebee;
+  --color-kc-grey-300: #c9c9d0;
+
+  --font-display: "Montserrat Variable", "Montserrat Fallback", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter Variable", "Inter Fallback", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --kc-black: #0f0f12;
+  --kc-ink: #1a1a1d;
+  --kc-yellow: #f5c518;
+  --kc-yellow-dark: #d9a900;
+  --kc-blue: #003399;
+  --kc-grey-50: #f6f6f7;
+  --kc-grey-100: #ebebee;
+  --kc-grey-300: #c9c9d0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--kc-ink);
+  background: #fff;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ── */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.15;
+  color: inherit;
+}
+
+/* ── Prose styles for check-page body content ── */
+.kc-prose {
+  max-width: 72ch;
+}
+.kc-prose h2 {
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  font-weight: 800;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--kc-black);
+}
+.kc-prose h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--kc-black);
+}
+.kc-prose p {
+  margin-bottom: 1.1rem;
+  color: #3a3a40;
+}
+.kc-prose ul {
+  list-style: disc;
+  padding-left: 1.4rem;
+  margin-bottom: 1.1rem;
+}
+.kc-prose ol {
+  list-style: decimal;
+  padding-left: 1.4rem;
+  margin-bottom: 1.1rem;
+}
+.kc-prose li {
+  margin-bottom: 0.35rem;
+  color: #3a3a40;
+}
+.kc-prose a {
+  color: var(--kc-blue);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+.kc-prose a:hover { color: var(--kc-yellow-dark); }
+
+/* ── Focus visible ── */
+:focus-visible {
+  outline: 2px solid var(--kc-yellow);
+  outline-offset: 3px;
+}
+
+/* ── Scrollbar (optional nice touch) ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--kc-grey-50); }
+::-webkit-scrollbar-thumb { background: var(--kc-grey-300); border-radius: 4px; }

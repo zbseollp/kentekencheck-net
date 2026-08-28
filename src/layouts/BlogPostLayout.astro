@@ -1,0 +1,348 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import { SITE } from "../lib/site";
+import { getCollection } from "astro:content";
+
+interface Props {
+  entry: {
+    id: string;
+    data: {
+      title: string;
+      description: string;
+      pubDate: Date;
+      updatedDate?: Date;
+      author?: string;
+      categories?: string[];
+      tags?: string[];
+    };
+  };
+}
+
+const { entry } = Astro.props;
+const { title, description, pubDate, updatedDate, author, categories } = entry.data;
+
+const formattedDate = pubDate.toLocaleDateString("nl-NL", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+// Pick 5 related posts (same category first, then recent, exclude self)
+const allPosts = (await getCollection("blog"))
+  .filter((p) => p.id !== entry.id)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const sameCat = categories?.length
+  ? allPosts.filter((p) => p.data.categories?.some((c) => categories.includes(c)))
+  : [];
+
+const relatedPosts = [
+  ...sameCat.slice(0, 3),
+  ...allPosts.filter((p) => !sameCat.includes(p)),
+].slice(0, 5);
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  dateModified: (updatedDate ?? pubDate).toISOString(),
+  author: { "@type": "Organization", name: SITE.name },
+  publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+  mainEntityOfPage: { "@type": "WebPage", "@id": Astro.url.href },
+};
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={Astro.url.href}
+  schema={schema}
+>
+  <article class="blog-article">
+    <header class="blog-header">
+      <div class="blog-header-inner">
+        {categories && categories.length > 0 && (
+          <div class="blog-cats">
+            {categories.map((cat) => (
+              <span class="blog-cat">{cat}</span>
+            ))}
+          </div>
+        )}
+        <h1>{title}</h1>
+        {description && <p class="blog-desc">{description}</p>}
+        <div class="blog-meta">
+          <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+          {author && <span>· {author}</span>}
+        </div>
+      </div>
+    </header>
+
+    <div class="blog-body">
+      <div class="blog-container">
+        <div class="blog-content kc-prose">
+          <slot />
+        </div>
+
+        <div class="blog-cta-inline">
+          <p>Snel een kenteken checken?</p>
+          <a href="/" class="cta-btn">Doe gratis een kentekencheck →</a>
+        </div>
+
+        {relatedPosts.length > 0 && (
+          <section class="ook-lezen">
+            <h2 class="ook-lezen-title">Ook interessant</h2>
+            <ul class="ook-lezen-grid" role="list">
+              {relatedPosts.map((post) => (
+                <li>
+                  <a href={`/${post.id}/`} class="ook-lezen-card">
+                    <div class="ook-lezen-meta">
+                      <time datetime={post.data.pubDate.toISOString()}>
+                        {post.data.pubDate.toLocaleDateString("nl-NL", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </time>
+                      {post.data.categories && post.data.categories.length > 0 && (
+                        <span class="ook-cat">{post.data.categories[0]}</span>
+                      )}
+                    </div>
+                    <h3>{post.data.title}</h3>
+                    {post.data.description && (
+                      <p class="ook-desc">{post.data.description}</p>
+                    )}
+                    <span class="ook-meer">Lees meer →</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        <div class="blog-back">
+          <a href="/blog/">← Alle artikelen</a>
+        </div>
+      </div>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .blog-header {
+    background: var(--kc-black);
+    color: #fff;
+    padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+    border-bottom: 2px solid var(--kc-yellow);
+  }
+
+  .blog-header-inner {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .blog-cats {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .blog-cat {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+  }
+
+  .blog-header h1 {
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 0.85rem;
+  }
+
+  .blog-desc {
+    color: #a0a0a8;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    margin-bottom: 1rem;
+    max-width: 56ch;
+  }
+
+  .blog-meta {
+    color: #606068;
+    font-size: 0.875rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .blog-body {
+    padding: 3rem 1.25rem 4rem;
+  }
+
+  .blog-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .blog-content {
+    max-width: 100%;
+  }
+
+  /* Inline CTA */
+  .blog-cta-inline {
+    margin: 3rem 0;
+    background: var(--kc-black);
+    border-radius: 12px;
+    padding: 1.75rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .blog-cta-inline p {
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: background 0.15s, transform 0.15s;
+  }
+
+  .cta-btn:hover {
+    background: var(--kc-yellow-dark);
+    transform: translateY(-1px);
+  }
+
+  /* Ook lezen */
+  .ook-lezen {
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+    border-top: 2px solid var(--kc-yellow);
+  }
+
+  .ook-lezen-title {
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    color: var(--kc-black);
+    margin-bottom: 1.5rem;
+  }
+
+  .ook-lezen-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  .ook-lezen-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid var(--kc-grey-100, #e8e8ee);
+    border-radius: 10px;
+    padding: 1.25rem 1.35rem;
+    text-decoration: none;
+    transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+    height: 100%;
+  }
+
+  .ook-lezen-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    border-color: var(--kc-yellow);
+  }
+
+  .ook-lezen-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .ook-lezen-meta time {
+    font-size: 0.75rem;
+    color: #88888f;
+  }
+
+  .ook-cat {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+  }
+
+  .ook-lezen-card h3 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--kc-black);
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+    flex: 1;
+  }
+
+  .ook-desc {
+    font-size: 0.8rem;
+    color: #55555d;
+    line-height: 1.55;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .ook-meer {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--kc-blue);
+    font-family: var(--font-display);
+    margin-top: auto;
+  }
+
+  .blog-back {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--kc-grey-100, #e8e8ee);
+  }
+
+  .blog-back a {
+    color: var(--kc-blue);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: color 0.15s;
+  }
+
+  .blog-back a:hover { color: var(--kc-yellow-dark); }
+</style>

@@ -1,0 +1,356 @@
+---
+import { NAV_KENTEKENCHECKS, NAV_WAARDECHECKS, NAV_AUTOINFO } from "@lib/site";
+const currentPath = Astro.url.pathname;
+---
+
+<header id="kc-header">
+  <div class="kc-header-inner">
+    <a href="/" class="kc-logo" aria-label="Home">
+      <div class="kc-logo-icon" aria-hidden="true">KC</div>
+      <span class="kc-logo-text">Kenteken<strong>check</strong></span>
+    </a>
+
+    <nav aria-label="Hoofdnavigatie" class="kc-nav">
+      <ul role="list">
+        <li><a href="/" class={currentPath === "/" ? "active" : ""}>Home</a></li>
+
+        <li class="kc-dropdown">
+          <button type="button" aria-expanded="false" aria-haspopup="true" id="dd-kentekenchecks">
+            Kentekenchecks <span aria-hidden="true">▾</span>
+          </button>
+          <ul class="kc-dropdown-menu" role="menu" aria-labelledby="dd-kentekenchecks">
+            {NAV_KENTEKENCHECKS.map((item) => (
+              <li role="none">
+                <a href={item.href} role="menuitem">{item.label}</a>
+              </li>
+            ))}
+          </ul>
+        </li>
+
+        <li class="kc-dropdown">
+          <button type="button" aria-expanded="false" aria-haspopup="true" id="dd-waardechecks">
+            Waardechecks <span aria-hidden="true">▾</span>
+          </button>
+          <ul class="kc-dropdown-menu" role="menu" aria-labelledby="dd-waardechecks">
+            {NAV_WAARDECHECKS.map((item) => (
+              <li role="none">
+                <a href={item.href} role="menuitem">{item.label}</a>
+              </li>
+            ))}
+          </ul>
+        </li>
+
+        <li class="kc-dropdown">
+          <button type="button" aria-expanded="false" aria-haspopup="true" id="dd-autoinfo">
+            Auto info <span aria-hidden="true">▾</span>
+          </button>
+          <ul class="kc-dropdown-menu" role="menu" aria-labelledby="dd-autoinfo">
+            {NAV_AUTOINFO.map((item) => (
+              <li role="none">
+                <a href={item.href} role="menuitem">{item.label}</a>
+              </li>
+            ))}
+          </ul>
+        </li>
+
+        <li><a href="/zoeken/" class={currentPath.startsWith("/zoeken/") ? "active" : ""}>Zoeken</a></li>
+        <li><a href="/blog/" class={currentPath.startsWith("/blog/") ? "active" : ""}>Blog</a></li>
+        <li><a href="/over-ons/" class={currentPath === "/over-ons/" ? "active" : ""}>Over ons</a></li>
+        <li><a href="/contact/" class={currentPath === "/contact/" ? "active" : ""}>Contact</a></li>
+      </ul>
+    </nav>
+
+    <button class="kc-hamburger" id="kc-hamburger" aria-label="Menu openen" aria-expanded="false" aria-controls="kc-mobile-nav">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav id="kc-mobile-nav" class="kc-mobile-nav" aria-label="Mobiele navigatie" hidden>
+    <ul role="list">
+      <li><a href="/">Home</a></li>
+      <li><span class="kc-mobile-group">Kentekenchecks</span>
+        <ul>
+          {NAV_KENTEKENCHECKS.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </li>
+      <li><span class="kc-mobile-group">Waardechecks</span>
+        <ul>
+          {NAV_WAARDECHECKS.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </li>
+      <li><span class="kc-mobile-group">Auto info</span>
+        <ul>
+          {NAV_AUTOINFO.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </li>
+      <li><a href="/zoeken/">Zoeken</a></li>
+      <li><a href="/blog/">Blog</a></li>
+      <li><a href="/over-ons/">Over ons</a></li>
+      <li><a href="/contact/">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  // Sticky header scroll effect
+  const header = document.getElementById("kc-header");
+  if (header) {
+    const update = () => header.classList.toggle("scrolled", window.scrollY > 20);
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+  }
+
+  // Hamburger
+  const ham = document.getElementById("kc-hamburger");
+  const mobileNav = document.getElementById("kc-mobile-nav");
+  ham?.addEventListener("click", () => {
+    const open = ham.getAttribute("aria-expanded") === "true";
+    ham.setAttribute("aria-expanded", String(!open));
+    ham.setAttribute("aria-label", open ? "Menu openen" : "Menu sluiten");
+    if (mobileNav) mobileNav.hidden = open;
+    ham.classList.toggle("open", !open);
+  });
+
+  // Dropdown buttons
+  document.querySelectorAll<HTMLButtonElement>(".kc-dropdown > button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") === "true";
+      // Close all
+      document.querySelectorAll<HTMLButtonElement>(".kc-dropdown > button").forEach((b) => {
+        b.setAttribute("aria-expanded", "false");
+        b.closest("li")?.classList.remove("open");
+      });
+      if (!open) {
+        btn.setAttribute("aria-expanded", "true");
+        btn.closest("li")?.classList.add("open");
+      }
+    });
+  });
+
+  // Close on outside click
+  document.addEventListener("click", (e) => {
+    if (!(e.target as Element).closest(".kc-dropdown")) {
+      document.querySelectorAll<HTMLButtonElement>(".kc-dropdown > button").forEach((b) => {
+        b.setAttribute("aria-expanded", "false");
+        b.closest("li")?.classList.remove("open");
+      });
+    }
+  });
+</script>
+
+<style>
+  #kc-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--kc-black);
+    border-bottom: 2px solid var(--kc-yellow);
+    transition: box-shadow 0.2s;
+  }
+
+  #kc-header.scrolled {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  .kc-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    height: 64px;
+  }
+
+  /* Logo */
+  .kc-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .kc-logo-icon {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 0.9rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.03em;
+  }
+
+  .kc-logo-text {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  .kc-logo-text strong {
+    color: var(--kc-yellow);
+    font-weight: 800;
+  }
+
+  /* Desktop nav */
+  .kc-nav { flex: 1; }
+  .kc-nav > ul {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+  }
+
+  .kc-nav a {
+    color: #e0e0e6;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+    display: block;
+  }
+
+  .kc-nav a:hover, .kc-nav a.active {
+    color: var(--kc-yellow);
+    background: rgba(245,197,24,0.08);
+  }
+
+  /* Dropdown */
+  .kc-dropdown { position: relative; }
+
+  .kc-dropdown > button {
+    background: none;
+    border: none;
+    color: #e0e0e6;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.45rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--font-body);
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .kc-dropdown > button:hover,
+  .kc-dropdown.open > button {
+    color: var(--kc-yellow);
+    background: rgba(245,197,24,0.08);
+  }
+
+  .kc-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--kc-ink);
+    border: 1px solid rgba(245,197,24,0.2);
+    border-radius: 10px;
+    padding: 0.5rem;
+    min-width: 220px;
+    list-style: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.15s, transform 0.15s;
+    z-index: 200;
+  }
+
+  .kc-dropdown.open .kc-dropdown-menu {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+  }
+
+  .kc-dropdown-menu a {
+    color: #d0d0d8;
+    font-size: 0.875rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: 6px;
+    display: block;
+    text-decoration: none;
+    transition: color 0.12s, background 0.12s;
+  }
+
+  .kc-dropdown-menu a:hover {
+    color: var(--kc-yellow);
+    background: rgba(245,197,24,0.1);
+  }
+
+  /* Hamburger */
+  .kc-hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: auto;
+  }
+
+  .kc-hamburger span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+
+  .kc-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .kc-hamburger.open span:nth-child(2) { opacity: 0; }
+  .kc-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* Mobile nav */
+  .kc-mobile-nav {
+    background: var(--kc-ink);
+    border-top: 1px solid rgba(245,197,24,0.15);
+    padding: 1rem 1.25rem 1.5rem;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .kc-mobile-nav ul { list-style: none; }
+  .kc-mobile-nav > ul > li { border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .kc-mobile-nav a {
+    color: #d0d0d8;
+    text-decoration: none;
+    font-size: 0.95rem;
+    padding: 0.6rem 0;
+    display: block;
+  }
+  .kc-mobile-nav a:hover { color: var(--kc-yellow); }
+
+  .kc-mobile-group {
+    color: var(--kc-yellow);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    display: block;
+    padding: 0.75rem 0 0.25rem;
+  }
+
+  .kc-mobile-nav ul ul li a {
+    padding: 0.4rem 0 0.4rem 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  @media (max-width: 900px) {
+    .kc-nav { display: none; }
+    .kc-hamburger { display: flex; }
+  }
+</style>

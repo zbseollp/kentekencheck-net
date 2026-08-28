@@ -1,0 +1,237 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import SEO from "../components/SEO.astro";
+import { SITE } from "../lib/site";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  noindex?: boolean;
+  ogImage?: string;
+  schema?: object | object[];
+  class?: string;
+}
+
+const { class: cls, ...seoProps } = Astro.props;
+---
+
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <SEO {...seoProps} />
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-T0N1F91PCM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-T0N1F91PCM');
+    </script>
+  </head>
+  <body class={cls}>
+    <a href="#main-content" class="kc-skip-link">Ga naar inhoud</a>
+    <Header />
+
+    <!-- Sticky kenteken balk (verschijnt na scrollen voorbij hero) -->
+    <div class="kc-sticky-bar" id="kc-sticky-bar" aria-hidden="true" inert>
+      <div class="kc-sticky-bar-inner">
+        <span class="kc-sticky-bar-label">Kenteken checken:</span>
+        <form class="kc-form kc-sticky-form" novalidate>
+          <div class="kc-sticky-plate">
+            <div class="kc-sticky-flag" aria-hidden="true">
+              <svg width="20" height="30" viewBox="0 0 28 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="28" height="42" rx="4" fill="#003399"/>
+                <text x="14" y="13" text-anchor="middle" font-size="8" fill="#f5c518" font-family="sans-serif" font-weight="bold">★</text>
+                <text x="14" y="32" text-anchor="middle" font-size="11" fill="white" font-family="Arial, sans-serif" font-weight="bold">NL</text>
+              </svg>
+            </div>
+            <input
+              type="text"
+              class="kc-input kc-sticky-input"
+              name="kenteken"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              inputmode="text"
+              placeholder="00-AAA-0"
+              maxlength="9"
+              aria-label="Voer kenteken in"
+            />
+          </div>
+          <button type="submit" class="kc-sticky-btn">Controleer →</button>
+        </form>
+      </div>
+    </div>
+
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+    <slot name="after-footer" />
+
+    <script>
+      // Submit handler voor sticky form
+      const stickyForm = document.querySelector<HTMLFormElement>(".kc-sticky-form");
+      if (stickyForm) {
+        const stickyInput = stickyForm.querySelector<HTMLInputElement>(".kc-sticky-input")!;
+        stickyInput.addEventListener("input", () => {
+          stickyInput.value = stickyInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        });
+        stickyForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const raw = stickyInput.value.replace(/[^A-Z0-9]/g, "").toUpperCase();
+          if (raw.length >= 4) {
+            window.location.href = `/kenteken/${raw}/`;
+          }
+        });
+      }
+
+      // Toon sticky balk zodra hero-form of check-hero uit beeld is
+      const bar = document.getElementById("kc-sticky-bar");
+      if (bar) {
+        const trigger = document.querySelector<HTMLElement>(".kc-hero-form, .check-hero-form");
+        if (trigger) {
+          const obs = new IntersectionObserver(
+            ([entry]) => {
+              const visible = !entry.isIntersecting;
+              bar.classList.toggle("kc-sticky-bar--visible", visible);
+              bar.setAttribute("aria-hidden", String(!visible));
+              if (visible) bar.removeAttribute("inert"); else bar.setAttribute("inert", "");
+            },
+            { rootMargin: "-60px 0px 0px 0px" }
+          );
+          obs.observe(trigger);
+        } else {
+          // Geen hero: altijd tonen na 300px scroll
+          const onScroll = () => {
+            const show = window.scrollY > 300;
+            bar.classList.toggle("kc-sticky-bar--visible", show);
+            bar.setAttribute("aria-hidden", String(!show));
+            if (show) bar.removeAttribute("inert"); else bar.setAttribute("inert", "");
+          };
+          window.addEventListener("scroll", onScroll, { passive: true });
+        }
+      }
+    </script>
+  </body>
+</html>
+
+<style is:global>
+  .kc-skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 0 0 6px 6px;
+    z-index: 9999;
+    text-decoration: none;
+    font-family: var(--font-display);
+  }
+  .kc-skip-link:focus { top: 0; }
+
+  /* ── Sticky kenteken balk ── */
+  .kc-sticky-bar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    background: var(--kc-black);
+    border-bottom: 2px solid var(--kc-yellow);
+    transform: translateY(-110%);
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .kc-sticky-bar--visible {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .kc-sticky-bar-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.6rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .kc-sticky-bar-label {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #a0a0a8;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .kc-sticky-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    max-width: 480px;
+  }
+  .kc-sticky-plate {
+    display: flex;
+    align-items: stretch;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: var(--kc-yellow);
+    flex: 1;
+  }
+  .kc-sticky-flag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    background: var(--kc-blue);
+    flex-shrink: 0;
+  }
+  .kc-sticky-input {
+    flex: 1;
+    background: var(--kc-yellow);
+    border: none;
+    outline: none;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+    color: var(--kc-black);
+    padding: 0.35rem 0.4rem;
+    min-width: 0;
+    caret-color: var(--kc-black);
+  }
+  .kc-sticky-input::placeholder {
+    color: rgba(15,15,18,0.35);
+    font-weight: 700;
+  }
+  .kc-sticky-btn {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.9rem;
+    padding: 0.45rem 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .kc-sticky-btn:hover { background: var(--kc-yellow-dark); }
+
+  @media (max-width: 500px) {
+    .kc-sticky-bar-label { display: none; }
+  }
+</style>

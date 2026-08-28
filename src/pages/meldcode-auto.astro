@@ -1,0 +1,35 @@
+---
+import CheckLayout from "../layouts/CheckLayout.astro";
+import { SITE } from "../lib/site";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Meldcode auto",
+  description: "Wat is een meldcode op een auto en wat betekent dit voor jou als koper? Alles over meldcodes in het RDW-systeem.",
+  url: `${SITE.url}/meldcode-auto/`,
+};
+---
+
+<CheckLayout
+  title="Meldcode auto | Wat betekent een meldcode? | Kentekencheck.net"
+  description="Wat is een meldcode op een auto en wat betekent dit voor jou als koper? Alles over meldcodes in het RDW-systeem."
+  heading="Meldcode auto"
+  subheading="Wat betekent een meldcode bij een voertuig?"
+  canonical={`${SITE.url}/meldcode-auto/`}
+  schema={schema}
+>
+  <h2>Wat is een meldcode?</h2>
+  <p>De meldcode bestaat uit de laatste vier cijfers van het chassisnummer van de auto. Dit unieke identificatienummer wordt ook wel het 'voertuigidentificatienummer' genoemd. De meldcode vormt samen met het kenteken van je auto een unieke combinatie die aan jouw specifieke voertuig gekoppeld is.</p>
+
+  <h2>Waarom is een meldcode nodig?</h2>
+  <p>In Nederland zijn autobezitters verplicht een WA-verzekering af te sluiten. Samen met de meldcode moet deze verzekering worden doorgegeven aan de Rijksdienst voor het Wegverkeer (RDW). De RDW controleert of je verzekerd bent en kan boetes uitschrijven als je meldcode niet is aangemeld terwijl je wel rijdt.</p>
+
+  <h2>Meldcode auto opvragen</h2>
+  <p>Je vindt de meldcode op het kentekenbewijs, onder de motorkap, of op het tenaamstellingsverslag. Je kunt gratis de meldcode van de auto opvragen bij de RDW. Dit verloopt via je DigiD, maar dit is alleen mogelijk als de auto op jouw naam staat.</p>
+
+  <h2>Autoverzekeringen</h2>
+  <p>Een WA-verzekering is verplicht. Het is verstandig vooraf offertes aan te vragen voordat je een verzekering afsluit. Hiervoor heb je nog geen meldcode nodig.</p>
+
+  <p>Dankzij Kentekencheck.net kom jij niet voor verrassingen te staan. Krijg direct toegang tot RDW gegevens, schadeverleden, kilometerstand, aantal eigenaren en actuele autowaarde.</p>
+</CheckLayout>

@@ -1,0 +1,166 @@
+---
+interface Props {
+  variant?: "hero" | "inline";
+  label?: string;
+}
+const { variant = "hero", label = "Voer een kenteken in" } = Astro.props;
+const isHero = variant === "hero";
+---
+
+<div class={isHero ? "kc-form-hero" : "kc-form-inline"}>
+  {isHero && (
+    <p class="kc-form-label">{label}</p>
+  )}
+  <form class="kc-form" novalidate>
+    <div class="kc-plate-wrap">
+      <div class="kc-plate-flag" aria-hidden="true">
+        <svg width="28" height="42" viewBox="0 0 28 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="28" height="42" rx="4" fill="#003399"/>
+          <text x="14" y="13" text-anchor="middle" font-size="8" fill="#f5c518" font-family="sans-serif" font-weight="bold">★</text>
+          <text x="14" y="32" text-anchor="middle" font-size="11" fill="white" font-family="Arial, sans-serif" font-weight="bold">NL</text>
+        </svg>
+      </div>
+      <input
+        type="text"
+        class="kc-input kc-plate-input"
+        name="kenteken"
+        autocomplete="off"
+        autocapitalize="characters"
+        spellcheck="false"
+        inputmode="text"
+        placeholder="00-AAA-0"
+        maxlength="9"
+        aria-label="Voer kenteken in"
+      />
+    </div>
+    <button type="submit" class="kc-btn-controleer">Controleer</button>
+    <p class="kc-form-error" role="alert" aria-live="polite"></p>
+  </form>
+</div>
+
+<script>
+  const REDIRECT_BASE = "/kenteken/";
+
+  document.querySelectorAll<HTMLFormElement>(".kc-form").forEach((form) => {
+    const input = form.querySelector<HTMLInputElement>(".kc-input")!;
+    const error = form.querySelector<HTMLParagraphElement>(".kc-form-error")!;
+
+    input.addEventListener("input", () => {
+      const pos = input.selectionStart ?? input.value.length;
+      input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      try { input.setSelectionRange(pos, pos); } catch {}
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const raw = input.value.replace(/[^A-Z0-9]/g, "").toUpperCase();
+      if (raw.length < 4) {
+        error.textContent = "Voer een geldig kenteken in (minimaal 4 tekens).";
+        input.focus();
+        return;
+      }
+      error.textContent = "";
+      window.location.href = `${REDIRECT_BASE}${raw}/`;
+    });
+  });
+</script>
+
+<style>
+  .kc-form-hero {
+    background: #fff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .kc-form-inline {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .kc-form-label {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kc-black);
+    margin-bottom: 1rem;
+  }
+
+  .kc-plate-wrap {
+    display: flex;
+    align-items: stretch;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid var(--kc-grey-300);
+    margin-bottom: 0.85rem;
+    background: var(--kc-yellow);
+  }
+
+  .kc-plate-flag {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    background: var(--kc-blue);
+    flex-shrink: 0;
+  }
+
+  .kc-plate-input {
+    flex: 1;
+    background: var(--kc-yellow);
+    border: none;
+    outline: none;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.65rem;
+    letter-spacing: 0.08em;
+    text-align: center;
+    color: var(--kc-black);
+    padding: 0.6rem 0.5rem;
+    width: 100%;
+    caret-color: var(--kc-black);
+  }
+
+  .kc-plate-input::placeholder {
+    color: rgba(15,15,18,0.35);
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
+
+  .kc-btn-controleer {
+    display: block;
+    width: 100%;
+    background: var(--kc-black);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.04em;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+
+  .kc-btn-controleer:hover {
+    background: #2a2a2f;
+  }
+
+  .kc-btn-controleer:active {
+    transform: scale(0.98);
+  }
+
+  .kc-form-error {
+    font-size: 0.85rem;
+    color: #c0392b;
+    margin-top: 0.5rem;
+    min-height: 1.2em;
+    font-weight: 600;
+  }
+</style>

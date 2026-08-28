@@ -1,0 +1,36 @@
+---
+import CheckLayout from "../layouts/CheckLayout.astro";
+import { SITE } from "../lib/site";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Kenteken voorspellen",
+  description: "Hoe werkt het systeem van kentekenreeksen in Nederland? Leer hoe je een toekomstig kenteken kunt voorspellen.",
+  url: `${SITE.url}/kenteken-voorspellen/`,
+};
+---
+
+<CheckLayout
+  title="Kenteken voorspellen | Hoe werkt het systeem? | Kentekencheck.net"
+  description="Hoe werkt het systeem van kentekenreeksen in Nederland? Leer hoe je een toekomstig kenteken kunt voorspellen."
+  heading="Kenteken voorspellen"
+  subheading="Hoe werkt het Nederlandse kentekenreekssysteem?"
+  canonical={`${SITE.url}/kenteken-voorspellen/`}
+  schema={schema}
+>
+  <p>Het kentekennummer is een combinatie van cijfers en letters met een bepaalde systematiek. De RDW beheert alle informatie over uitgegeven kentekens.</p>
+
+  <h2>Kenteken voorspeller</h2>
+  <p>Er is echter ook een groep van voornamelijk verzamelaars te vinden die zich bezig houden met het voorspellen van kentekens. Deze enthousiastelingen zoeken naar gewilde combinaties die waarde kunnen hebben.</p>
+
+  <h2>Kenteken voorspellen werkt zo</h2>
+  <p>Er zijn rekenmodellen ontwikkeld waarmee vrij nauwkeurig kan worden bepaald wanneer een nieuw kenteken wordt uitgegeven. Dit vereist uitgebreide datasets en is niet voor iedereen toegankelijk.</p>
+
+  <p>Eenmaal uitgegeven blijft een kenteken geregistreerd op de auto. In Nederland blijft het kenteken aan het voertuig gekoppeld en niet aan de eigenaar, anders dan in sommige andere landen.</p>
+
+  <h3>Laatste kenteken voorspellen</h3>
+  <p>Het voorspellen van het nieuwste kenteken is mogelijk door historische afgifte-gegevens te analyseren. Instanties zoals de RDW die over alle informatie beschikken kunnen vrij nauwkeurig aangeven wanneer bepaalde kentekens beschikbaar komen.</p>
+
+  <p>Dankzij Kentekencheck.net kom jij niet voor verrassingen te staan. Krijg direct toegang tot RDW gegevens, schadeverleden, kilometerstand, aantal eigenaren en actuele autowaarde.</p>
+</CheckLayout>

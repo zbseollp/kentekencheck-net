@@ -1,0 +1,35 @@
+---
+import CheckLayout from "../layouts/CheckLayout.astro";
+import { SITE } from "../lib/site";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Auto naar de sloop",
+  description: "Wat moet je doen als je auto naar de sloop gaat? Stappenplan, sloopwaarde, subsidies en sloopregelingen uitgelegd.",
+  url: `${SITE.url}/auto-naar-de-sloop/`,
+};
+---
+
+<CheckLayout
+  title="Auto naar de sloop | Wat levert dit op? | Kentekencheck.net"
+  description="Wat moet je doen als je auto naar de sloop gaat? Stappenplan, sloopwaarde, subsidies en sloopregelingen uitgelegd."
+  heading="Auto naar de sloop"
+  subheading="Wat levert je auto op en hoe regel je het correct?"
+  canonical={`${SITE.url}/auto-naar-de-sloop/`}
+  schema={schema}
+>
+  <h2>Auto naar de sloop: het stappenplan</h2>
+  <p>Eerst moet je je auto leeghalen. Vervolgens neem je contact op met een RDW-erkend demontagebedrijf. Je brengt je kentekenbewijs, kentekenplaat en identiteitsbewijs mee. Het bedrijf meldt je kenteken af bij de RDW, waarna je een vrijwaringsbewijs ontvangt. Je autoverzekering stopt niet automatisch, dus je moet zelf contact opnemen met je verzekeraar.</p>
+
+  <h2>Subsidies en sloopregelingen</h2>
+  <p>Grote steden als Amsterdam, Utrecht en Rotterdam bieden sloopregelingen. Voor het slopen van een dieselauto kun je tot €1.000 ontvangen. Als je vervolgens een elektrisch voertuig aanschaft, kun je extra vergoeding ontvangen.</p>
+
+  <h2>Wat krijg ik voor mijn auto bij de sloop?</h2>
+  <p>Sloopauto's worden gekocht voor onderdelen. Je ontvangt een RDW-vrijwaring en meestal gratis ophaling. De sloopprijs ligt tussen de €75 en €100.</p>
+
+  <h2>Veil je auto</h2>
+  <p>Als alternatief kun je je auto veilen. Dit kan €100 tot €250 opleveren.</p>
+
+  <p>Dankzij <a href="/">Kentekencheck.net</a> kom jij niet voor verrassingen te staan. Krijg direct toegang tot <a href="/rdw-ovi/">RDW OVI check</a>, <a href="/schadeverleden-auto/">schadeverleden</a>, <a href="/kilometerstand-controleren/">kilometerstand check</a>, <a href="/kenteken-check-eigenaar/">aantal eigenaren</a> en actuele <a href="/dagwaarde-auto/">dagwaarde</a>.</p>
+</CheckLayout>

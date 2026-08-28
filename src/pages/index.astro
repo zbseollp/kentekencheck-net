@@ -1,0 +1,527 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import KentekenForm from "../components/KentekenForm.astro";
+import { SITE, POPULAR_CHECKS } from "../lib/site";
+import { getCollection } from "astro:content";
+
+const recentPosts = (await getCollection("blog"))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 6);
+
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE.url}/#website`,
+    url: SITE.url,
+    name: SITE.name,
+    description: SITE.description,
+    inLanguage: "nl-NL",
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": `${SITE.url}/#organization`,
+    name: SITE.name,
+    url: SITE.url,
+  },
+];
+---
+
+<BaseLayout
+  title="Kenteken Check | 100% GRATIS TOEGANG Autoverleden, KM Stand etc."
+  description="KENTEKEN CHECK: Ontdek de ✓ Autowaarde ✓ Autoverleden ✓ Schadeverleden ✓ Kilometerstand ✓ Eigenarenhistorie 100% GRATIS in Nederland."
+  schema={schema}
+>
+  <!-- ── HERO ── -->
+  <section class="kc-hero" aria-labelledby="hero-heading">
+    <div class="kc-hero-inner">
+      <div class="kc-hero-text">
+        <div class="kc-eyebrow">100% gratis · geen registratie</div>
+        <h1 id="hero-heading">
+          Check elk<br />kenteken<br />
+          <span class="kc-accent">in seconden.</span>
+        </h1>
+        <p class="kc-hero-sub">
+          RDW-data, schadeverleden, kilometerstand, eigenaren en APK. Alles in één overzicht, direct in je browser.
+        </p>
+        <ul class="kc-hero-checks" aria-label="Inbegrepen checks">
+          <li>Schadeverleden</li>
+          <li>KM-stand</li>
+          <li>APK-status</li>
+          <li>Eigenarenhistorie</li>
+        </ul>
+      </div>
+
+      <div class="kc-hero-form">
+        <KentekenForm variant="hero" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TRUST BAR ── -->
+  <div class="kc-trust" role="list" aria-label="Kenmerken">
+    <span role="listitem">✓ Officiele RDW-bron</span>
+    <span role="listitem">✓ Direct resultaat</span>
+    <span role="listitem">✓ Volledig anoniem</span>
+  </div>
+
+  <!-- ── HOE WERKT HET ── -->
+  <section class="kc-section kc-dark" aria-labelledby="how-heading">
+    <div class="kc-container">
+      <h2 id="how-heading" class="kc-section-title">Zo werkt het.</h2>
+      <p class="kc-section-sub">Drie stappen, geen account. Klaar.</p>
+      <div class="kc-steps">
+        <div class="kc-step">
+          <div class="kc-num">1</div>
+          <h3>Voer kenteken in</h3>
+          <p>Type het kenteken in zonder streepjes, bijvoorbeeld 37TVR1.</p>
+        </div>
+        <div class="kc-step">
+          <div class="kc-num">2</div>
+          <h3>Klik op Controleer</h3>
+          <p>We sturen je direct door naar het volledige rapport bij Kentekencheck.nu.</p>
+        </div>
+        <div class="kc-step">
+          <div class="kc-num">3</div>
+          <h3>Ken je auto</h3>
+          <p>Bekijk schadeverleden, kilometerstand, APK, eigenaren en meer. Binnen seconden.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── POPULAIRE CHECKS ── -->
+  <section class="kc-section kc-light" aria-labelledby="popular-heading">
+    <div class="kc-container">
+      <h2 id="popular-heading" class="kc-section-title kc-dark-text">Populaire checks.</h2>
+      <p class="kc-section-sub kc-sub-dark">Onze meest gebruikte tools, allemaal gratis.</p>
+      <ul class="kc-checks-grid" role="list">
+        {POPULAR_CHECKS.map((item) => (
+          <li>
+            <a href={item.href} class="kc-check-link kc-check-link--light">
+              <span>{item.label}</span>
+              <span class="kc-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── WAAROM ── -->
+  <section class="kc-section kc-light" aria-labelledby="why-heading">
+    <div class="kc-container">
+      <h2 id="why-heading" class="kc-section-title kc-dark-text">Waarom een kenteken check?</h2>
+      <div class="kc-why-grid">
+        <div class="kc-why-card">
+          <h3>Voorkom miskoop</h3>
+          <p>Zie verborgen schadehistorie en niet-gemelde reparaties vóórdat je een tweedehands auto koopt.</p>
+        </div>
+        <div class="kc-why-card">
+          <h3>Check de KM-stand</h3>
+          <p>Vergelijk officieel geregistreerde tellerstanden. Teruggedraaide tellers vallen direct op.</p>
+        </div>
+        <div class="kc-why-card">
+          <h3>APK & status</h3>
+          <p>Weet wanneer de auto APK-plichtig is en of er openstaande issues geregistreerd staan bij de RDW.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RECENT BLOG ── -->
+  <section class="kc-section kc-dark" aria-labelledby="blog-heading">
+    <div class="kc-container">
+      <h2 id="blog-heading" class="kc-section-title">Uit ons blog.</h2>
+      <p class="kc-section-sub">Alles over auto's, kentekens en autorecht.</p>
+      <ul class="kc-blog-grid" role="list">
+        {recentPosts.map((post) => (
+          <li>
+            <a href={`/${post.id}/`} class="kc-blog-card">
+              <div class="kc-blog-date">
+                <time datetime={post.data.pubDate.toISOString()}>
+                  {post.data.pubDate.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}
+                </time>
+              </div>
+              <h3>{post.data.title}</h3>
+              {post.data.description && <p class="kc-blog-desc">{post.data.description}</p>}
+              <span class="kc-blog-meer">Lees meer →</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="kc-blog-cta">
+        <a href="/blog/" class="kc-btn-outline">Alle artikelen bekijken →</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* ── Hero ── */
+  .kc-hero {
+    background: var(--kc-black);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(255,255,255,0.015) 0px,
+      rgba(255,255,255,0.015) 1px,
+      transparent 1px,
+      transparent 20px
+    );
+    color: #fff;
+    padding: clamp(3rem, 8vw, 6rem) 1.25rem;
+  }
+
+  .kc-hero-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .kc-eyebrow {
+    display: inline-block;
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.85rem;
+    border-radius: 4px;
+    margin-bottom: 1.25rem;
+  }
+
+  .kc-hero-text h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900;
+    line-height: 1.05;
+    color: #fff;
+    margin-bottom: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .kc-accent { color: var(--kc-yellow); }
+
+  .kc-hero-sub {
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    color: #b0b0b8;
+    max-width: 44ch;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .kc-hero-checks {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+
+  .kc-hero-checks li {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #d8d8e0;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .kc-hero-checks li::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background: var(--kc-yellow);
+    clip-path: polygon(20% 50%, 0px 70%, 40% 100%, 100% 20%, 80% 0px, 40% 60%);
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .kc-hero-form {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* ── Trust bar ── */
+  .kc-trust {
+    background: var(--kc-yellow);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    justify-content: center;
+    gap: clamp(1.5rem, 5vw, 4rem);
+    flex-wrap: wrap;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--kc-black);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ── Sections ── */
+  .kc-section {
+    padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+  }
+
+  .kc-dark {
+    background: var(--kc-black);
+    color: #fff;
+  }
+
+  .kc-light {
+    background: var(--kc-grey-50);
+    color: var(--kc-black);
+  }
+
+  .kc-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .kc-section-title {
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+    color: inherit;
+  }
+
+  .kc-dark-text { color: var(--kc-black); }
+
+  .kc-section-sub {
+    color: #888890;
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ── Steps ── */
+  .kc-steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .kc-step {
+    background: var(--kc-ink);
+    border-radius: 12px;
+    padding: 1.75rem;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: border-color 0.2s;
+  }
+
+  .kc-step:hover { border-color: rgba(245,197,24,0.3); }
+
+  .kc-num {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+    background: var(--kc-black);
+    color: var(--kc-yellow);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.1rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+  }
+
+  .kc-step h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: #fff;
+  }
+
+  .kc-step p {
+    font-size: 0.9rem;
+    color: #888890;
+    line-height: 1.6;
+  }
+
+  /* ── Popular checks grid ── */
+  .kc-checks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+  }
+
+  .kc-check-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--kc-ink);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    color: #d0d0d8;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+
+  .kc-check-link:hover {
+    border-color: var(--kc-yellow);
+    color: var(--kc-yellow);
+    background: rgba(245,197,24,0.06);
+  }
+
+  .kc-arrow { font-size: 1rem; transition: transform 0.15s; }
+  .kc-check-link:hover .kc-arrow { transform: translateX(4px); }
+
+  /* Light variant for checks grid */
+  .kc-check-link--light {
+    background: #fff;
+    border-color: var(--kc-grey-100);
+    color: var(--kc-ink);
+  }
+  .kc-check-link--light:hover {
+    border-color: var(--kc-yellow);
+    color: var(--kc-black);
+    background: rgba(245,197,24,0.08);
+  }
+
+  /* Sub text on light background */
+  .kc-sub-dark { color: #55555d; }
+
+  /* ── Blog grid ── */
+  .kc-blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    list-style: none;
+  }
+
+  .kc-blog-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--kc-ink);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-decoration: none;
+    transition: border-color 0.18s, transform 0.18s;
+    height: 100%;
+  }
+
+  .kc-blog-card:hover {
+    border-color: var(--kc-yellow);
+    transform: translateY(-2px);
+  }
+
+  .kc-blog-date time {
+    font-size: 0.75rem;
+    color: #909098;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .kc-blog-card h3 {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.35;
+    margin-bottom: 0.5rem;
+    flex: 1;
+  }
+
+  .kc-blog-desc {
+    font-size: 0.82rem;
+    color: #888890;
+    line-height: 1.55;
+    margin-bottom: 0.75rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .kc-blog-meer {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--kc-yellow);
+    font-family: var(--font-display);
+    margin-top: auto;
+  }
+
+  .kc-blog-cta {
+    margin-top: 2rem;
+    text-align: center;
+  }
+
+  .kc-btn-outline {
+    display: inline-block;
+    border: 2px solid var(--kc-yellow);
+    color: var(--kc-yellow);
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.7rem 1.75rem;
+    border-radius: 8px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .kc-btn-outline:hover {
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+  }
+
+  /* ── Why grid ── */
+  .kc-why-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .kc-why-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.75rem;
+    border: 1px solid var(--kc-grey-100);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .kc-why-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  }
+
+  .kc-why-card h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--kc-black);
+    margin-bottom: 0.6rem;
+  }
+
+  .kc-why-card p {
+    font-size: 0.9rem;
+    color: #55555d;
+    line-height: 1.65;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .kc-hero-inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+
+    .kc-hero-checks { justify-content: center; }
+    .kc-hero-sub { margin-left: auto; margin-right: auto; }
+    .kc-hero-form { justify-content: center; }
+
+    .kc-steps { grid-template-columns: 1fr; }
+    .kc-why-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .kc-trust { gap: 1rem; font-size: 0.8rem; }
+  }
+</style>

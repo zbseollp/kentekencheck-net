@@ -1,0 +1,180 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { SITE } from "../../lib/site";
+import { getPayloadPosts } from "../../lib/payload";
+
+const pageSize = 24;
+const pageParam = parseInt(Astro.url.searchParams.get("p") ?? "1");
+const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+
+// Fetch both sources in parallel
+const [mdPosts, payloadPosts] = await Promise.all([
+  getCollection("blog"),
+  getPayloadPosts(200),
+]);
+
+// Normalize markdown posts
+const mdNormalized = mdPosts.map((p) => ({
+  title: p.data.title,
+  slug: p.id,
+  description: p.data.description ?? "",
+  pubDate: p.data.pubDate,
+  categories: p.data.categories ?? [],
+  source: "md" as const,
+}));
+
+// Normalize Payload posts (exclude slugs already in markdown)
+const mdSlugs = new Set(mdPosts.map((p) => p.id));
+const payloadNormalized = payloadPosts
+  .filter((p) => !mdSlugs.has(p.slug))
+  .map((p) => ({
+    title: p.title,
+    slug: p.slug,
+    description: p.description ?? "",
+    pubDate: new Date(p.pubDate),
+    categories: p.categories ?? [],
+    source: "payload" as const,
+  }));
+
+// Merge and sort by date
+const allPosts = [...mdNormalized, ...payloadNormalized].sort(
+  (a, b) => b.pubDate.valueOf() - a.pubDate.valueOf()
+);
+
+const total = allPosts.length;
+const lastPage = Math.max(1, Math.ceil(total / pageSize));
+const safePage = Math.min(currentPage, lastPage);
+const posts = allPosts.slice((safePage - 1) * pageSize, safePage * pageSize);
+
+const isFirst = safePage === 1;
+const canonical = isFirst ? `${SITE.url}/blog/` : `${SITE.url}/blog/?p=${safePage}`;
+
+type PageItem = { type: "page"; n: number; href: string } | { type: "ellipsis" } | null;
+const pageItems: PageItem[] = Array.from({ length: lastPage }, (_, i) => i + 1).map((n) => {
+  const diff = n - safePage;
+  const isNearby = diff >= -2 && diff <= 2;
+  const isEdge = n === 1 || n === lastPage;
+  const showEllipsisBefore = diff === -3 && n > 2;
+  const showEllipsisAfter = diff === 3 && n < lastPage - 1;
+  if (showEllipsisBefore || showEllipsisAfter) return { type: "ellipsis" } as PageItem;
+  if (!isNearby && !isEdge) return null;
+  const href = n === 1 ? "/blog/" : `/blog/?p=${n}`;
+  return { type: "page", n, href } as PageItem;
+});
+---
+
+<BaseLayout
+  title={isFirst ? "Blog | Kentekencheck.net" : `Blog pagina ${safePage} | Kentekencheck.net`}
+  description="Lees onze artikelen over autohistorie, kentekencheck, APK, schadeverleden en alles wat je moet weten over tweedehands auto's kopen."
+  canonical={canonical}
+>
+  <section class="page-hero">
+    <div class="page-hero-inner">
+      <h1>Blog</h1>
+      <p>Tips, uitleg en nieuws over kentekencheck, autohistorie en tweedehands auto's kopen.</p>
+    </div>
+  </section>
+
+  <section class="blog-body">
+    <div class="blog-container">
+      {posts.length === 0 ? (
+        <div class="blog-empty">
+          <div class="blog-empty-icon" aria-hidden="true">📝</div>
+          <h2>Binnenkort nieuwe artikelen</h2>
+          <p>We zijn druk bezig met het schrijven van informatieve artikelen. Kom snel terug!</p>
+          <a href="/" class="back-btn">← Doe direct een kentekencheck</a>
+        </div>
+      ) : (
+        <Fragment>
+          <ul class="blog-grid" role="list">
+            {posts.map((post) => (
+              <li>
+                <a href={`/${post.slug}/`} class="blog-card">
+                  <div class="blog-card-meta">
+                    <time datetime={post.pubDate.toISOString()}>
+                      {post.pubDate.toLocaleDateString("nl-NL", {
+                        year: "numeric", month: "long", day: "numeric",
+                      })}
+                    </time>
+                    {post.categories.length > 0 && (
+                      <span class="blog-cat">{post.categories[0]}</span>
+                    )}
+                  </div>
+                  <h2>{post.title}</h2>
+                  {post.description && (
+                    <p class="blog-card-desc">{post.description}</p>
+                  )}
+                  <span class="blog-read-more">Lees meer →</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <nav class="pagination" aria-label="Pagina's">
+            {safePage > 1 && (
+              <a href={safePage === 2 ? "/blog/" : `/blog/?p=${safePage - 1}`} class="page-btn">← Vorige</a>
+            )}
+            <div class="page-numbers">
+              {pageItems.map((item) => {
+                if (!item) return null;
+                if (item.type === "ellipsis") return <span class="page-ellipsis">…</span>;
+                return item.n === safePage
+                  ? <span class="page-num page-current" aria-current="page">{item.n}</span>
+                  : <a href={item.href} class="page-num">{item.n}</a>;
+              })}
+            </div>
+            {safePage < lastPage && (
+              <a href={`/blog/?p=${safePage + 1}`} class="page-btn">Volgende →</a>
+            )}
+          </nav>
+
+          <p class="page-info">Pagina {safePage} van {lastPage} · {total} artikelen</p>
+        </Fragment>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-hero {
+    background: var(--kc-black); color: #fff;
+    padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+    border-bottom: 2px solid var(--kc-yellow);
+  }
+  .page-hero-inner { max-width: 800px; margin: 0 auto; }
+  .page-hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+  .page-hero p { color: #a0a0a8; font-size: 1.1rem; }
+  .blog-body { padding: 3rem 1.25rem 4rem; }
+  .blog-container { max-width: 1100px; margin: 0 auto; }
+  .blog-grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+  .blog-card {
+    display: flex; flex-direction: column;
+    background: #fff; border: 1px solid var(--kc-grey-100); border-radius: 12px;
+    padding: 1.75rem; text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; height: 100%;
+  }
+  .blog-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: var(--kc-yellow); }
+  .blog-card-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .blog-card-meta time { font-size: 0.8rem; color: #888890; }
+  .blog-cat { background: var(--kc-yellow); color: var(--kc-black); font-family: var(--font-display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; }
+  .blog-card h2 { font-size: 1.1rem; font-weight: 800; color: var(--kc-black); margin-bottom: 0.6rem; line-height: 1.3; flex: 1; }
+  .blog-card-desc { font-size: 0.875rem; color: #55555d; line-height: 1.6; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .blog-read-more { font-size: 0.85rem; font-weight: 700; color: var(--kc-blue); font-family: var(--font-display); margin-top: auto; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 3rem; flex-wrap: wrap; }
+  .page-btn { display: inline-flex; align-items: center; padding: 0.6rem 1.25rem; background: var(--kc-black); color: #fff; text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: 0.875rem; border-radius: 8px; transition: background 0.15s; }
+  .page-btn:hover { background: var(--kc-blue); }
+  .page-numbers { display: flex; align-items: center; gap: 0.25rem; }
+  .page-num { display: inline-flex; align-items: center; justify-content: center; min-width: 2.25rem; height: 2.25rem; padding: 0 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600; text-decoration: none; color: var(--kc-black); border: 1px solid var(--kc-grey-100, #e8e8ee); transition: background 0.15s, border-color 0.15s, color 0.15s; }
+  .page-num:hover { background: var(--kc-yellow); border-color: var(--kc-yellow); color: var(--kc-black); }
+  .page-current { background: var(--kc-yellow); border-color: var(--kc-yellow); color: var(--kc-black); font-weight: 800; cursor: default; }
+  .page-ellipsis { font-size: 0.9rem; color: #88888f; padding: 0 0.25rem; user-select: none; }
+  .page-info { text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #88888f; }
+  .blog-empty { text-align: center; padding: 3rem; background: var(--kc-grey-50); border-radius: 16px; border: 1px solid var(--kc-grey-100); }
+  .blog-empty-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+  .blog-empty h2 { font-size: 1.5rem; font-weight: 800; color: var(--kc-black); margin-bottom: 0.75rem; }
+  .blog-empty p { color: #55555d; max-width: 40ch; margin: 0 auto 1.5rem; line-height: 1.65; }
+  .back-btn { display: inline-block; background: var(--kc-yellow); color: var(--kc-black); text-decoration: none; font-family: var(--font-display); font-weight: 800; padding: 0.75rem 1.5rem; border-radius: 8px; }
+</style>

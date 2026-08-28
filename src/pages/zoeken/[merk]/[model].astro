@@ -1,0 +1,165 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const { merk, model } = Astro.params;
+const merkDecoded = decodeURIComponent((merk ?? "").replace(/-/g, " ")).toUpperCase();
+const modelDecoded = decodeURIComponent((model ?? "").replace(/-/g, " ")).toUpperCase();
+
+if (!merkDecoded || !modelDecoded) return Astro.redirect("/zoeken/");
+
+const page = parseInt(Astro.url.searchParams.get("pagina") ?? "1");
+const perPage = 50;
+const offset = (page - 1) * perPage;
+
+type Voertuig = { kenteken: string; datum_eerste_toelating?: string; eerste_kleur?: string; inrichting?: string };
+
+let voertuigen: Voertuig[] = [];
+let totaal = 0;
+let fout = false;
+
+try {
+  const [dataRes, countRes] = await Promise.all([
+    fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?$where=merk=%27${encodeURIComponent(merkDecoded)}%27%20AND%20handelsbenaming=%27${encodeURIComponent(modelDecoded)}%27&$select=kenteken,datum_eerste_toelating,eerste_kleur,inrichting&$order=datum_eerste_toelating%20desc&$limit=${perPage}&$offset=${offset}`),
+    fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?$where=merk=%27${encodeURIComponent(merkDecoded)}%27%20AND%20handelsbenaming=%27${encodeURIComponent(modelDecoded)}%27&$select=count(*)%20as%20count`),
+  ]);
+  if (dataRes.ok) voertuigen = await dataRes.json() as Voertuig[];
+  if (countRes.ok) {
+    const c = await countRes.json() as { count: string }[];
+    totaal = parseInt(c[0]?.count ?? "0");
+  }
+} catch {
+  fout = true;
+}
+
+if (!fout && voertuigen.length === 0 && page === 1) return Astro.redirect(`/zoeken/${merk}/`);
+
+const totaalPaginas = Math.ceil(totaal / perPage);
+
+function formatKenteken(k: string): string {
+  const patterns = [
+    /^([A-Z]{2})(\d{2})([A-Z]{2})$/,/^(\d{2})([A-Z]{2})(\d{2})$/,
+    /^(\d{2})(\d{2})([A-Z]{2})$/,/^([A-Z]{2})(\d{2})(\d{2})$/,
+    /^([A-Z]{2})([A-Z]{2})(\d{2})$/,/^(\d{2})([A-Z]{2})([A-Z]{2})$/,
+    /^(\d{1})([A-Z]{3})(\d{2})$/,/^(\d{2})([A-Z]{3})(\d{1})$/,
+    /^([A-Z]{1})(\d{3})([A-Z]{2})$/,/^([A-Z]{2})(\d{3})([A-Z]{1})$/,
+    /^(\d{3})([A-Z]{2})(\d{1})$/,/^(\d{1})([A-Z]{2})(\d{3})$/,
+    /^([A-Z]{3})(\d{2})([A-Z]{1})$/,/^([A-Z]{1})(\d{2})([A-Z]{3})$/,
+  ];
+  for (const p of patterns) {
+    const m = k.match(p);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+  return k;
+}
+
+function cap(s: string) { return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : "–"; }
+
+const title = `${merkDecoded} ${modelDecoded} kentekens – pagina ${page} | Kentekencheck.net`;
+const description = `Alle ${merkDecoded} ${modelDecoded} voertuigen geregistreerd in Nederland. ${totaal.toLocaleString("nl-NL")} kentekens gevonden.`;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="zo-hero">
+    <div class="zo-hero-inner">
+      <nav class="zo-breadcrumb" aria-label="Breadcrumb">
+        <a href="/zoeken/">Merken</a>
+        <span>›</span>
+        <a href={`/zoeken/${merk}/`}>{merkDecoded}</a>
+        <span>›</span>
+        <span>{modelDecoded}</span>
+      </nav>
+      <h1>{merkDecoded} {modelDecoded}</h1>
+      <p class="zo-hero-sub">{totaal.toLocaleString("nl-NL")} kentekens gevonden in Nederland</p>
+    </div>
+  </div>
+
+  <div class="zo-body">
+    <div class="zo-container">
+      <h2 class="zo-section-title">
+        Kentekens {page > 1 ? `– pagina ${page} van ${totaalPaginas}` : ""}
+      </h2>
+
+      {fout ? (
+        <p class="zo-fout">RDW-data tijdelijk niet beschikbaar.</p>
+      ) : (
+        <>
+          <div class="zo-kenteken-lijst">
+            {voertuigen.map(v => (
+              <a href={`/kenteken/${v.kenteken}/`} class="zo-kenteken-row">
+                <div class="zo-plate">{formatKenteken(v.kenteken)}</div>
+                <div class="zo-meta">
+                  <span>{v.datum_eerste_toelating?.slice(0, 4) ?? "–"}</span>
+                  {v.eerste_kleur && v.eerste_kleur !== "Niet geregistreerd" && (
+                    <span>{cap(v.eerste_kleur)}</span>
+                  )}
+                  {v.inrichting && <span>{cap(v.inrichting)}</span>}
+                </div>
+                <span class="zo-arrow">→</span>
+              </a>
+            ))}
+          </div>
+
+          {totaalPaginas > 1 && (
+            <nav class="zo-paginering" aria-label="Paginering">
+              {page > 1 && (
+                <a href={`/zoeken/${merk}/${model}/${page > 2 ? `?pagina=${page - 1}` : ""}`} class="zo-pag-btn">← Vorige</a>
+              )}
+              <span class="zo-pag-info">Pagina {page} van {totaalPaginas}</span>
+              {page < totaalPaginas && (
+                <a href={`/zoeken/${merk}/${model}/?pagina=${page + 1}`} class="zo-pag-btn">Volgende →</a>
+              )}
+            </nav>
+          )}
+        </>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .zo-hero {
+    background: var(--kc-black);
+    background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 20px);
+    padding: clamp(2rem, 4vw, 3.5rem) 1.25rem;
+    color: #fff;
+  }
+  .zo-hero-inner { max-width: 1100px; margin: 0 auto; }
+  .zo-breadcrumb { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: #606068; margin-bottom: 0.75rem; flex-wrap: wrap; }
+  .zo-breadcrumb a { color: var(--kc-yellow); text-decoration: none; }
+  .zo-breadcrumb a:hover { text-decoration: underline; }
+  .zo-hero h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.4rem; }
+  .zo-hero-sub { color: #a0a0a8; }
+
+  .zo-body { padding: 2rem 1.25rem 4rem; background: var(--kc-grey-50); }
+  .zo-container { max-width: 900px; margin: 0 auto; }
+  .zo-section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--kc-blue); margin-bottom: 1rem; }
+  .zo-fout { color: #c0392b; }
+
+  .zo-kenteken-lijst { display: flex; flex-direction: column; gap: 0.5rem; }
+  .zo-kenteken-row {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.75rem 1rem; background: #fff;
+    border: 1px solid var(--kc-grey-100); border-radius: 10px;
+    text-decoration: none; transition: border-color 0.15s;
+  }
+  .zo-kenteken-row:hover { border-color: var(--kc-yellow); }
+  .zo-plate {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: 1rem; letter-spacing: 0.06em;
+    background: var(--kc-yellow); color: var(--kc-black);
+    padding: 0.25rem 0.6rem; border-radius: 4px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .zo-meta { flex: 1; display: flex; gap: 0.75rem; font-size: 0.85rem; color: #707078; flex-wrap: wrap; }
+  .zo-arrow { color: #909098; flex-shrink: 0; }
+
+  .zo-paginering { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; justify-content: center; }
+  .zo-pag-btn {
+    padding: 0.6rem 1.2rem; background: var(--kc-yellow); color: var(--kc-black);
+    border-radius: 8px; text-decoration: none; font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+  }
+  .zo-pag-btn:hover { background: var(--kc-yellow-dark); }
+  .zo-pag-info { font-size: 0.85rem; color: #707078; }
+</style>

@@ -1,0 +1,150 @@
+---
+export const prerender = false;
+
+import { getCollection, render } from "astro:content";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../lib/site";
+import { getPayloadPost, lexicalToHtml } from "../lib/payload";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/blog/");
+
+// Try local markdown first
+const allPosts = await getCollection("blog");
+const mdEntry = allPosts.find((p) => p.id === slug);
+
+type PostData = {
+  title: string;
+  description: string;
+  pubDate: Date;
+  categories: string[];
+  htmlContent: string | null;
+  MdContent: any | null;
+  relatedPosts: { id: string; data: { title: string; pubDate: Date } }[];
+};
+
+let postData: PostData | null = null;
+
+if (mdEntry) {
+  const { Content } = await render(mdEntry);
+  postData = {
+    title: mdEntry.data.title,
+    description: mdEntry.data.description ?? "",
+    pubDate: mdEntry.data.pubDate,
+    categories: mdEntry.data.categories ?? [],
+    htmlContent: null,
+    MdContent: Content,
+    relatedPosts: allPosts
+      .filter((p) => p.id !== mdEntry.id)
+      .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+      .slice(0, 5),
+  };
+} else {
+  const payloadPost = await getPayloadPost(slug);
+  if (!payloadPost) return Astro.redirect("/blog/");
+  postData = {
+    title: payloadPost.title,
+    description: payloadPost.description ?? "",
+    pubDate: new Date(payloadPost.pubDate),
+    categories: payloadPost.categories ?? [],
+    htmlContent: lexicalToHtml(payloadPost.content),
+    MdContent: null,
+    relatedPosts: [],
+  };
+}
+
+const { title, description, pubDate, categories, htmlContent, MdContent, relatedPosts } = postData;
+
+const formattedDate = pubDate.toLocaleDateString("nl-NL", {
+  year: "numeric", month: "long", day: "numeric",
+});
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: title,
+  description,
+  datePublished: pubDate.toISOString(),
+  author: { "@type": "Organization", name: SITE.name },
+  publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
+  mainEntityOfPage: { "@type": "WebPage", "@id": Astro.url.href },
+};
+---
+
+<BaseLayout {title} {description} canonical={Astro.url.href} {schema}>
+  <article class="bp-wrap">
+    <header class="bp-hero">
+      <div class="bp-hero-inner">
+        <div class="bp-meta">
+          <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+          {categories.length > 0 && (
+            <span class="bp-cat">{categories[0]}</span>
+          )}
+        </div>
+        <h1>{title}</h1>
+        {description && <p class="bp-desc">{description}</p>}
+      </div>
+    </header>
+
+    <div class="bp-body">
+      <div class="bp-content prose">
+        {MdContent ? <MdContent /> : <Fragment set:html={htmlContent} />}
+      </div>
+
+      {relatedPosts.length > 0 && (
+        <aside class="bp-related">
+          <h2 class="bp-related-title">Gerelateerde artikelen</h2>
+          <ul>
+            {relatedPosts.map((p) => (
+              <li>
+                <a href={`/${p.id}/`}>
+                  <span class="rp-date">
+                    {p.data.pubDate.toLocaleDateString("nl-NL", { year: "numeric", month: "short", day: "numeric" })}
+                  </span>
+                  {p.data.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .bp-hero {
+    background: var(--kc-black); color: #fff;
+    padding: clamp(3rem, 6vw, 5rem) 1.25rem;
+    border-bottom: 2px solid var(--kc-yellow);
+  }
+  .bp-hero-inner { max-width: 760px; margin: 0 auto; }
+  .bp-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; font-size: 0.85rem; color: #888890; }
+  .bp-cat { background: var(--kc-yellow); color: var(--kc-black); font-family: var(--font-display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; }
+  .bp-hero h1 { font-size: clamp(1.75rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
+  .bp-desc { color: #a0a0a8; font-size: 1.05rem; line-height: 1.65; }
+
+  .bp-body { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
+
+  .prose { line-height: 1.75; color: #1a1a22; font-size: 1.05rem; }
+  .prose :global(h2) { font-size: 1.5rem; font-weight: 800; margin: 2rem 0 0.75rem; color: var(--kc-black); }
+  .prose :global(h3) { font-size: 1.2rem; font-weight: 700; margin: 1.75rem 0 0.6rem; }
+  .prose :global(h4) { font-size: 1rem; font-weight: 700; margin: 1.5rem 0 0.5rem; }
+  .prose :global(p) { margin-bottom: 1.25rem; }
+  .prose :global(ul), .prose :global(ol) { margin: 1rem 0 1.25rem 1.5rem; }
+  .prose :global(li) { margin-bottom: 0.4rem; }
+  .prose :global(a) { color: var(--kc-blue); text-decoration: underline; }
+  .prose :global(a:hover) { color: var(--kc-yellow-dark); }
+  .prose :global(blockquote) { border-left: 3px solid var(--kc-yellow); margin: 1.5rem 0; padding: 0.75rem 1.25rem; background: var(--kc-grey-50); color: #55555d; }
+  .prose :global(img) { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; }
+  .prose :global(code) { background: var(--kc-grey-100); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
+  .prose :global(hr) { border: none; border-top: 1px solid var(--kc-grey-100); margin: 2rem 0; }
+
+  .bp-related { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--kc-grey-100); }
+  .bp-related-title { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--kc-yellow); font-family: var(--font-display); margin-bottom: 1rem; }
+  .bp-related ul { list-style: none; }
+  .bp-related li { border-bottom: 1px solid var(--kc-grey-100); }
+  .bp-related a { display: flex; gap: 1rem; align-items: baseline; padding: 0.6rem 0; text-decoration: none; color: var(--kc-black); font-size: 0.9rem; transition: color 0.15s; }
+  .bp-related a:hover { color: var(--kc-blue); }
+  .rp-date { font-size: 0.75rem; color: #888890; flex-shrink: 0; }
+</style>

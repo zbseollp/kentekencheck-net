@@ -1,0 +1,37 @@
+---
+import CheckLayout from "../layouts/CheckLayout.astro";
+import { SITE } from "../lib/site";
+
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Laatst uitgegeven kenteken",
+  description: "Welk kenteken is als laatste uitgegeven in Nederland? Bekijk de actuele stand van de kentekenreeks.",
+  url: `${SITE.url}/laatst-uitgegeven-kenteken/`,
+};
+---
+
+<CheckLayout
+  title="Laatst uitgegeven kenteken in Nederland | Kentekencheck.net"
+  description="Welk kenteken is als laatste uitgegeven in Nederland? Bekijk de actuele stand van de kentekenreeks en begrijp het systeem."
+  heading="Laatst uitgegeven kenteken"
+  subheading="Bekijk welk kenteken als laatste is uitgegeven in Nederland."
+  canonical={`${SITE.url}/laatst-uitgegeven-kenteken/`}
+  schema={schema}
+>
+  <p>Het kenteken is voor velen iets waar ze niet meer naar omkijken wanneer ze eenmaal een auto gekocht hebben. Er wordt echter wel beweerd dat auto's met een later uitgegeven kenteken meer waard zijn dan die waarvan het kenteken eerder is uitgegeven. Dit is aan een kant wel logisch omdat een later uitgegeven kenteken ook betekent dat betreffende auto van een hoger bouwjaar is. Het gebeurt soms echter dat er binnen een jaar een nieuwe serie aan kentekens moet worden uitgegeven en wachten velen toch wel even af op het doen van hun aankoop wanneer de nieuwe serie al uit is. Het laatst uitgegeven kenteken dat uitgegeven is moet dan wel bekend zijn.</p>
+
+  <h2>Laatste kenteken auto</h2>
+  <p>Om te kijken welke nummers het laatst zijn uitgegeven bij de laatste uitgegeven kentekens hoef je niet langs te gaan bij een RDW kantoor of een autohandelaar. De gegevens van de laatste nieuwe kentekens zijn door een ieder online te bezichtigen en worden regelmatig geüpdatet. Elke voertuigtype (personenauto, caravan, bedrijfsauto) heeft zijn eigen kentekenserie en worden die ook apart weergegeven.</p>
+
+  <p>Er is een groot aantal combinaties mogelijk tussen de verschillende letters en cijfers waaruit zo een serie bestaat. De RDW zorgt er wel voor dat "foute" combinaties uit de kenteken database worden gehaald. Denk hierbij bijvoorbeeld aan afkortingen van namen die niet zo prettig in ieders oren zullen klinken of namen van politieke partijen.</p>
+
+  <p>Er blijven echter nog genoeg combinaties over waar verzamelaars wel grof geld willen betalen, maar is dat wel een kwestie van kentekens voorspellen.</p>
+
+  <h2>RDW laatste kenteken</h2>
+  <p>Indien je meer wilt weten over het laatst uitgegeven kenteken, kan je het best een kentekencheck laten uitvoeren. Hierbij wordt alle informatie, van het voertuigtype tot de motorinhoud, bekend en kan deze informatie onder andere worden gebruikt om voorspellingen te kunnen verrichten voor de automarkt. De verkoop van nieuwe auto's verloopt altijd via een bepaalde trend en kunnen door steeds het laatst uitgegeven kenteken personenauto te weten autohandelaren inspelen op de vraag op de automarkt.</p>
+
+  <p>Het laatst uitgegeven kenteken RDW is dus makkelijk voor een ieder te achterhalen en worden die meestal vrij snel (tussen de 10 en 15 minuten) aangepast. Hiermee zie je direct het laatste kenteken RDW. Met de verkregen informatie van het RDW laatste kenteken kan je prognoses maken over de tijdsduur waarop een bepaald kenteken zal worden uitgebracht. Maar dat is meer een taak voor personen die op zoek zijn naar een gewilde cijfer- en lettercombinatie bij de nieuwste kentekens.</p>
+
+  <p>Dankzij Kentekencheck.net kom jij niet voor verrassingen te staan. Krijg direct toegang tot RDW OVI check, schadeverleden, kilometerstand, aantal eigenaren en actuele dagwaarde.</p>
+</CheckLayout>

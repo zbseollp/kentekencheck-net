@@ -1,0 +1,153 @@
+---
+export const prerender = false;
+
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { SITE } from "../../lib/site";
+
+type MerkCount = { merk: string; count: string };
+
+let merken: MerkCount[] = [];
+let fout = false;
+
+try {
+  const res = await fetch(
+    "https://opendata.rdw.nl/resource/m9d7-ebf2.json?$select=merk,count(*)%20as%20count&$group=merk&$order=count%20desc&$limit=300&$where=merk%20IS%20NOT%20NULL"
+  );
+  if (res.ok) merken = await res.json() as MerkCount[];
+} catch {
+  fout = true;
+}
+
+function merkSlug(merk: string) {
+  return encodeURIComponent(merk.toLowerCase().replace(/\s+/g, "-"));
+}
+
+const title = "Kenteken opzoeken op merk | Kentekencheck.net";
+const description = "Zoek een kenteken op via merk en model. Bekijk alle geregistreerde voertuigen per automerk in Nederland via de gratis RDW-database.";
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="zo-hero">
+    <div class="zo-hero-inner">
+      <h1>Kenteken opzoeken</h1>
+      <p class="zo-hero-sub">Selecteer een merk om alle modellen en kentekens te bekijken, of zoek direct op kenteken.</p>
+      <form class="zo-search-form" action="/zoeken/kenteken/" method="get">
+        <input
+          type="text"
+          name="q"
+          class="zo-search-input"
+          placeholder="Bijv. 1-ABC-23"
+          maxlength="10"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <button type="submit" class="zo-search-btn">Zoek →</button>
+      </form>
+      <script>
+        const form = document.querySelector<HTMLFormElement>('.zo-search-form');
+        if (form) {
+          const input = form.querySelector<HTMLInputElement>('.zo-search-input')!;
+          input.addEventListener('input', () => {
+            input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+          });
+          form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const raw = input.value.replace(/[^A-Z0-9]/g, '').toUpperCase();
+            if (raw.length >= 4) window.location.href = `/kenteken/${raw}/`;
+          });
+        }
+      </script>
+    </div>
+  </div>
+
+  <div class="zo-body">
+    <div class="zo-container">
+      <h2 class="zo-section-title">Selecteer een merk</h2>
+      {fout ? (
+        <p class="zo-fout">RDW-data tijdelijk niet beschikbaar. Probeer het later opnieuw.</p>
+      ) : (
+        <div class="zo-merk-grid">
+          {merken.map(m => (
+            <a href={`/zoeken/${merkSlug(m.merk)}/`} class="zo-merk-card">
+              <span class="zo-merk-naam">{m.merk}</span>
+              <span class="zo-merk-count">{parseInt(m.count).toLocaleString("nl-NL")} kentekens</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .zo-hero {
+    background: var(--kc-black);
+    background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 20px);
+    padding: clamp(2.5rem, 5vw, 4rem) 1.25rem;
+    color: #fff;
+  }
+  .zo-hero-inner { max-width: 700px; margin: 0 auto; }
+  .zo-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  .zo-hero-sub { color: #a0a0a8; margin-bottom: 1.5rem; }
+
+  .zo-search-form { display: flex; gap: 0.5rem; }
+  .zo-search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.07);
+    color: #fff;
+    font-size: 1.1rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+  .zo-search-input::placeholder { color: #606068; font-weight: 400; letter-spacing: normal; }
+  .zo-search-input:focus { outline: none; border-color: var(--kc-yellow); }
+  .zo-search-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--kc-yellow);
+    color: var(--kc-black);
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .zo-search-btn:hover { background: var(--kc-yellow-dark); }
+
+  .zo-body { padding: 2rem 1.25rem 4rem; background: var(--kc-grey-50); }
+  .zo-container { max-width: 1100px; margin: 0 auto; }
+  .zo-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--kc-blue);
+    margin-bottom: 1.25rem;
+  }
+  .zo-fout { color: #c0392b; }
+
+  .zo-merk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+  }
+  .zo-merk-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.85rem 1rem;
+    background: #fff;
+    border: 1px solid var(--kc-grey-100);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .zo-merk-card:hover { border-color: var(--kc-yellow); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .zo-merk-naam { font-weight: 700; color: var(--kc-black); font-size: 0.9rem; }
+  .zo-merk-count { font-size: 0.75rem; color: #909098; }
+</style>
