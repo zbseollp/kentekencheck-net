@@ -249,6 +249,7 @@ console.log(`${files.length} bestanden in ${BLOG_DIR}`);
 
 const posts = [];
 const problemen = [];
+let afgeleid = 0;
 
 for (const file of files) {
   const slug = file.replace(/\.mdx?$/, "");
@@ -266,17 +267,45 @@ for (const file of files) {
     problemen.push(`${file}: onleesbare pubDate "${data.pubDate ?? data.date}"`);
     continue;
   }
+  const lexical = markdownToLexical(body);
+  const description = data.description || data.excerpt || afgeleideDescription(lexical);
+  if (!description) {
+    problemen.push(`${file}: geen description en geen bruikbare eerste alinea`);
+    continue;
+  }
+  if (!(data.description || data.excerpt)) afgeleid++;
+
   posts.push({
     slug,
     title: data.title,
-    description: data.description || data.excerpt || "",
+    description,
     pubDate: datum.toISOString(),
     ...(data.updatedDate ? { updatedDate: new Date(data.updatedDate).toISOString() } : {}),
-    ...(data.categories && data.categories.length ? { categories: data.categories } : {}),
-    ...(data.tags && data.tags.length ? { tags: data.tags } : {}),
+    // categories en tags zijn array-velden met een value-subveld, geen platte strings
+    ...(data.categories && data.categories.length
+      ? { categories: data.categories.map((value) => ({ value })) }
+      : {}),
+    ...(data.tags && data.tags.length ? { tags: data.tags.map((value) => ({ value })) } : {}),
     publishStatus: "published",
-    content: markdownToLexical(body),
+    content: lexical,
   });
+}
+
+// Payload eist een description, maar 314 van de 343 bestanden hebben er geen.
+// Vallen terug op de eerste alinea, afgekapt op een woordgrens — zelfde orde van
+// grootte als de descriptions die er wel zijn (110-176 tekens).
+function plattTekst(node) {
+  if (node.type === "text") return node.text ?? "";
+  return (node.children ?? []).map(plattTekst).join("");
+}
+
+function afgeleideDescription(lexical, maxLengte = 155) {
+  const alinea = (lexical.root.children ?? []).find((n) => n.type === "paragraph");
+  const tekst = (alinea ? plattTekst(alinea) : "").replace(/\s+/g, " ").trim();
+  if (tekst.length <= maxLengte) return tekst;
+  const kort = tekst.slice(0, maxLengte);
+  const spatie = kort.lastIndexOf(" ");
+  return `${(spatie > 60 ? kort.slice(0, spatie) : kort).replace(/[,;:.\s]+$/, "")}...`;
 }
 
 function telNodes(node) {
@@ -284,6 +313,7 @@ function telNodes(node) {
 }
 
 console.log(`${posts.length} posts gelezen en omgezet naar Lexical`);
+console.log(`${afgeleid} descriptions afgeleid uit de eerste alinea`);
 if (posts.length) {
   const totaal = posts.reduce((som, p) => som + telNodes(p.content.root), 0);
   console.log(`gemiddeld ${Math.round(totaal / posts.length)} nodes per post`);
@@ -322,13 +352,17 @@ console.log(`${bestaand.size} posts al aanwezig in de tenant`);
 let aangemaakt = 0;
 let overgeslagen = 0;
 let mislukt = 0;
+let pogingen = 0;
 
 for (const post of posts) {
-  if (aangemaakt >= LIMIT) break;
+  // op pogingen tellen, niet op successen: anders loopt --limit 1 bij een fout
+  // gewoon door naar de volgende post
+  if (pogingen >= LIMIT) break;
   if (bestaand.has(post.slug)) {
     overgeslagen++;
     continue;
   }
+  pogingen++;
   const res = await api(`/${COLLECTION}`, {
     method: "POST",
     body: JSON.stringify({ ...post, tenant }),
