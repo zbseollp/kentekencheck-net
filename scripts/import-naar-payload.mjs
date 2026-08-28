@@ -13,6 +13,10 @@
 //   PAYLOAD_API_KEY="..."                       (voorkeur)
 //   of PAYLOAD_EMAIL="..." PAYLOAD_PASSWORD="..."
 //
+// Zet ze bij voorkeur in .env (staat in .gitignore) en laad ze met Node zelf:
+//   node --env-file=.env scripts/import-naar-payload.mjs --limit 1 --doit
+// Zo staat de sleutel niet in je shell-historie en niet in de repo.
+//
 // Het script is herhaalbaar: bestaande slugs in de tenant worden overgeslagen.
 
 import { readdir, readFile } from "node:fs/promises";
