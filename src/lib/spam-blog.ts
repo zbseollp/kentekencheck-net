@@ -3,26 +3,29 @@
  *
  * Two tiers, deliberately separated:
  *
- * - isSpamBlogPost()      hard signals only — injected scripts and redirect
- *                         payloads. Safe to filter automatically; a false
- *                         positive here is very unlikely.
+ * - isSpamBlogPost()      hard signals only — payloads that hijack the page:
+ *                         document.write, eval(atob(...)), and location
+ *                         assignments. Safe to filter automatically.
  * - isOffTopicBlogPost()  soft signal — celebrity/gossip filler pushed onto a
  *                         niche site. Reported by scripts/remove-spam-blog.mjs
  *                         for review; never auto-deleted, because "is this on
  *                         topic" is an editorial call, not a mechanical one.
  *
- * Note on third-party image hosts: a post whose images live on someone else's
- * CDN is NOT spam — that is an image-resolution problem, handled by
- * scripts/sanitize-blog.mjs, which drops only values that aren't images at all.
+ * Deliberately NOT spam signals:
+ *  - <iframe> and <script src=...> embeds. YouTube players, Twitter widgets and
+ *    the like are ordinary article content; treating them as injection deletes
+ *    real posts. Inline injection payloads are stripped by sanitize-blog.mjs.
+ *  - Images hosted on a third-party CDN. That is an image-resolution concern,
+ *    handled by the media resolver, not a reason to drop the article.
  */
 
-/** Injection payloads that must never reach the built HTML. */
+/** Payloads that hijack the page and must never reach the built HTML. */
 const INJECTION_PATTERNS: RegExp[] = [
   /document\s*\.\s*write\s*\(/i,
-  /<script\b[^>]*>/i,
   /\beval\s*\(\s*atob\s*\(/i,
-  /window\s*\.\s*location\s*\.\s*(?:href|replace)\s*[=(]/i,
-  /<iframe\b[^>]*\bsrc=["']?https?:\/\//i,
+  /\bunescape\s*\(\s*["']%(?:3C|64)/i,
+  /window\s*\.\s*location\s*(?:\.\s*(?:href|replace)\s*[=(]|\s*=)/i,
+  /<meta[^>]+http-equiv=["']?refresh["']?[^>]*url=/i,
 ];
 
 /** Gossip-filler title shapes (Dutch), used for reporting only. */

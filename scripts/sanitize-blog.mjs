@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Non-destructive cleanup pass over synced blog content:
- *  - strip injected <script> blocks and document.write payloads from bodies
+ *  - strip inline <script> blocks carrying injection payloads (embed scripts
+ *    with a src are left alone — they are ordinary article content)
  *  - blank image fields whose value is not an image at all (a bare page URL),
  *    which would otherwise render as a broken <img>
  *  - normalise WordPress `path "Title"` image scalars down to the path
@@ -70,9 +71,14 @@ for (const path of listBlogFiles()) {
     );
   }
 
+  // Strip only inline scripts carrying an injection payload. Embed scripts
+  // with a src (YouTube, social widgets) are ordinary article content.
   body = body
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
-    .replace(/<script\b[^>]*\/?>/gi, '')
+    .replace(/<script\b(?![^>]*\bsrc=)[^>]*>[\s\S]*?<\/script>/gi, (block) =>
+      /document\s*\.\s*write\s*\(|eval\s*\(\s*atob\s*\(|window\s*\.\s*location/i.test(block)
+        ? ''
+        : block,
+    )
     .replace(/^.*document\s*\.\s*write\s*\([\s\S]*?\).*$/gim, '');
 
   const next = `---\n${frontmatter}\n---\n${body}`;

@@ -42,10 +42,10 @@ export function excerptFromBody(body: string | undefined, limit = 160): string {
 
 function timestamp(entry: Entry): number {
   const candidates = [entry.data.pubDate, entry.data.date, entry.data.updatedDate];
-  return candidates.reduce<number>((newest, value) => {
-    const time = value instanceof Date ? value.valueOf() : NaN;
-    return Number.isNaN(time) ? newest : Math.max(newest, time);
-  }, 0);
+  for (const value of candidates) {
+    if (value instanceof Date && !Number.isNaN(value.valueOf())) return value.valueOf();
+  }
+  return 0;
 }
 
 /** Single source of truth for "is this post live?". */

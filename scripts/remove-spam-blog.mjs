@@ -3,8 +3,9 @@
  * Delete hard-spam posts (injected scripts, redirect payloads) from the blog
  * collection, and REPORT off-topic gossip filler without touching it.
  *
- * A post whose images sit on a third-party CDN is NOT spam — sanitize-blog.mjs
- * handles image values, and deleting such posts would drop real articles.
+ * Deliberately not spam: <iframe>/<script src> embeds (YouTube players, social
+ * widgets) and images on a third-party CDN. Both appear in real articles;
+ * treating them as injection deletes legitimate posts.
  *
  *   node scripts/remove-spam-blog.mjs                 delete hard spam, report off-topic
  *   node scripts/remove-spam-blog.mjs --dry-run       report only, delete nothing
@@ -22,10 +23,10 @@ const applyOffTopic = args.has('--apply-offtopic');
 
 const INJECTION_PATTERNS = [
   /document\s*\.\s*write\s*\(/i,
-  /<script\b[^>]*>/i,
   /\beval\s*\(\s*atob\s*\(/i,
-  /window\s*\.\s*location\s*\.\s*(?:href|replace)\s*[=(]/i,
-  /<iframe\b[^>]*\bsrc=["']?https?:\/\//i,
+  /\bunescape\s*\(\s*["']%(?:3C|64)/i,
+  /window\s*\.\s*location\s*(?:\.\s*(?:href|replace)\s*[=(]|\s*=)/i,
+  /<meta[^>]+http-equiv=["']?refresh["']?[^>]*url=/i,
 ];
 const OFF_TOPIC_TITLE_PATTERNS = [
   /\bvriendin\b/i,
