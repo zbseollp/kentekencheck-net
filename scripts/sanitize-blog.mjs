@@ -45,17 +45,27 @@ for (const path of listBlogFiles()) {
 
   for (const field of IMAGE_FIELDS) {
     frontmatter = frontmatter.replace(
-      new RegExp(`^(${field}:\\s*)(.*)$`, 'gm'),
-      (line, head, rawValue) => {
+      // Capture the rest of the line plus whatever follows, so a nested media
+      // object (value on the following indented lines) can be left untouched.
+      new RegExp(`^(${field}:[ \\t]*)([^\\n]*)(\\n|$)([ \\t]+\\S)?`, 'gm'),
+      (match, head, rawValue, newline, nextIndented) => {
         const value = rawValue.trim();
-        // Object form (value on following lines) — leave alone.
-        if (value === '' || value === '""' || value === "''") return `${head}""`;
+
+        // `featuredImage:` followed by an indented line is a Payload media
+        // object — a legitimate shape the schema handles. Never flatten it.
+        if (!value && nextIndented) return match;
+        if (!value) return `${head}""${newline}${nextIndented ?? ''}`;
+
         const unquoted = value.replace(/^["']|["']$/g, '');
         // `path "Title"` → path (the quotes may arrive backslash-escaped),
         // before deciding whether the value is an image at all
-        const stripped = unquoted.replace(/\s+\\?["'].*$/, '').trim();
-        if (!stripped || !looksLikeImage(stripped)) return `${head}""`;
-        return needsQuoting(stripped) ? `${head}"${stripped}"` : `${head}${stripped}`;
+        const stripped = unquoted.replace(/\\s+\\\\?["'].*$/, '').trim();
+        const next = !stripped || !looksLikeImage(stripped)
+          ? `${head}""`
+          : needsQuoting(stripped)
+            ? `${head}"${stripped}"`
+            : `${head}${stripped}`;
+        return `${next}${newline}${nextIndented ?? ''}`;
       },
     );
   }

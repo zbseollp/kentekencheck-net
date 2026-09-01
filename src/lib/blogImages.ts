@@ -93,11 +93,21 @@ export function resolveOgImage(
   return toAbsoluteUrl(image, siteOrigin);
 }
 
+/** `alt` carried inside a Payload media object, when there is one. */
+function mediaObjectAlt(value: ImageLike): string {
+  if (!value || typeof value !== 'object') return '';
+  const alt = (value as { alt?: unknown }).alt;
+  return typeof alt === 'string' ? alt.trim() : '';
+}
+
 export function resolveFeaturedImageAlt(data: BlogImageData | undefined, fallback = ''): string {
   return (
     data?.featuredImageAlt?.trim() ||
     data?.imageAlt?.trim() ||
     data?.alt?.trim() ||
+    mediaObjectAlt(data?.featuredImage) ||
+    mediaObjectAlt(data?.heroImage) ||
+    mediaObjectAlt(data?.image) ||
     fallback ||
     data?.title?.trim() ||
     ''
