@@ -2,11 +2,10 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import KentekenForm from "../components/KentekenForm.astro";
 import { SITE, POPULAR_CHECKS } from "../lib/site";
-import { getCollection } from "astro:content";
+import { getMarkdownPosts } from "../lib/posts";
 
-const recentPosts = (await getCollection("blog"))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 6);
+// Same publish filters and ordering as /blog/ — see src/lib/posts.ts.
+const recentPosts = (await getMarkdownPosts()).slice(0, 6);
 
 const schema = [
   {

@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 import { SITE } from "../lib/site";
-import { getCollection } from "astro:content";
+import { getMarkdownPosts } from "../lib/posts";
 
 interface Props {
   entry: {
@@ -28,9 +28,7 @@ const formattedDate = pubDate.toLocaleDateString("nl-NL", {
 });
 
 // Pick 5 related posts (same category first, then recent, exclude self)
-const allPosts = (await getCollection("blog"))
-  .filter((p) => p.id !== entry.id)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const allPosts = (await getMarkdownPosts()).filter((p) => p.id !== entry.id);
 
 const sameCat = categories?.length
   ? allPosts.filter((p) => p.data.categories?.some((c) => categories.includes(c)))

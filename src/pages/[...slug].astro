@@ -1,16 +1,19 @@
 ---
 export const prerender = false;
 
-import { getCollection, render } from "astro:content";
+import { render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { SITE } from "../lib/site";
 import { getPayloadPost, lexicalToHtml } from "../lib/payload";
+import { excerptFromBody, getMarkdownPosts } from "../lib/posts";
+import { resolveFeaturedImage, resolveFeaturedImageAlt, resolveOgImage } from "../lib/blogImages";
+import { repairMediaUrlsInHtml } from "../lib/media-url.mjs";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/blog/");
 
-// Try local markdown first
-const allPosts = await getCollection("blog");
+// Same publish filters as /blog/ — a post is live in both places or neither.
+const allPosts = await getMarkdownPosts();
 const mdEntry = allPosts.find((p) => p.id === slug);
 
 type PostData = {
@@ -18,6 +21,9 @@ type PostData = {
   description: string;
   pubDate: Date;
   categories: string[];
+  heroImage: string | null;
+  heroImageAlt: string;
+  ogImage: string | null;
   htmlContent: string | null;
   MdContent: any | null;
   relatedPosts: { id: string; data: { title: string; pubDate: Date } }[];
@@ -29,31 +35,38 @@ if (mdEntry) {
   const { Content } = await render(mdEntry);
   postData = {
     title: mdEntry.data.title,
-    description: mdEntry.data.description ?? "",
+    description: mdEntry.data.description || excerptFromBody(mdEntry.body),
     pubDate: mdEntry.data.pubDate,
     categories: mdEntry.data.categories ?? [],
+    heroImage: resolveFeaturedImage(mdEntry.data, mdEntry.body),
+    heroImageAlt: resolveFeaturedImageAlt(mdEntry.data, mdEntry.data.title),
+    ogImage: resolveOgImage(mdEntry.data, mdEntry.body, SITE.url),
     htmlContent: null,
     MdContent: Content,
     relatedPosts: allPosts
       .filter((p) => p.id !== mdEntry.id)
-      .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
       .slice(0, 5),
   };
 } else {
   const payloadPost = await getPayloadPost(slug);
   if (!payloadPost) return Astro.redirect("/blog/");
+  if (payloadPost.publishStatus === "draft") return Astro.redirect("/blog/");
   postData = {
     title: payloadPost.title,
     description: payloadPost.description ?? "",
     pubDate: new Date(payloadPost.pubDate),
     categories: payloadPost.categories ?? [],
-    htmlContent: lexicalToHtml(payloadPost.content),
+    heroImage: resolveFeaturedImage(payloadPost as never),
+    heroImageAlt: payloadPost.heroImage?.alt ?? payloadPost.title,
+    ogImage: resolveOgImage(payloadPost as never, undefined, SITE.url),
+    // Payload's Lexical HTML carries raw /media/... sources.
+    htmlContent: repairMediaUrlsInHtml(lexicalToHtml(payloadPost.content)),
     MdContent: null,
     relatedPosts: [],
   };
 }
 
-const { title, description, pubDate, categories, htmlContent, MdContent, relatedPosts } = postData;
+const { title, description, pubDate, categories, heroImage, heroImageAlt, ogImage, htmlContent, MdContent, relatedPosts } = postData;
 
 const formattedDate = pubDate.toLocaleDateString("nl-NL", {
   year: "numeric", month: "long", day: "numeric",
@@ -68,10 +81,11 @@ const schema = {
   author: { "@type": "Organization", name: SITE.name },
   publisher: { "@type": "Organization", name: SITE.name, url: SITE.url },
   mainEntityOfPage: { "@type": "WebPage", "@id": Astro.url.href },
+  ...(ogImage ? { image: ogImage } : {}),
 };
 ---
 
-<BaseLayout {title} {description} canonical={Astro.url.href} {schema}>
+<BaseLayout {title} {description} canonical={Astro.url.href} {schema} ogImage={ogImage ?? undefined}>
   <article class="bp-wrap">
     <header class="bp-hero">
       <div class="bp-hero-inner">
@@ -85,6 +99,12 @@ const schema = {
         {description && <p class="bp-desc">{description}</p>}
       </div>
     </header>
+
+    {heroImage && (
+      <figure class="bp-hero-img">
+        <img src={heroImage} alt={heroImageAlt} width="1120" height="630" loading="eager" decoding="async" />
+      </figure>
+    )}
 
     <div class="bp-body">
       <div class="bp-content prose">
@@ -123,6 +143,9 @@ const schema = {
   .bp-cat { background: var(--kc-yellow); color: var(--kc-black); font-family: var(--font-display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; }
   .bp-hero h1 { font-size: clamp(1.75rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
   .bp-desc { color: #a0a0a8; font-size: 1.05rem; line-height: 1.65; }
+
+  .bp-hero-img { max-width: 900px; margin: -1px auto 0; padding: 0 1.25rem; }
+  .bp-hero-img img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; border-radius: 0 0 12px 12px; }
 
   .bp-body { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
 

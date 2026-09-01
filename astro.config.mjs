@@ -4,6 +4,7 @@ import mdx from "@astrojs/mdx";
 import compress from "astro-compress";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
+import rehypeRepairMediaUrls from "./src/lib/rehype-repair-media-urls.mjs";
 
 export default defineConfig({
   site: "https://kentekencheck.net",
@@ -20,5 +21,11 @@ export default defineConfig({
     }),
     compress({ CSS: true, HTML: true, Image: false, JavaScript: true, SVG: true }),
   ],
-  vite: { plugins: [tailwindcss()] },
+  // Rewrites /media/... and bare-R2 <img> sources in post bodies to the
+  // tenant's public R2 URL.
+  markdown: { rehypePlugins: [rehypeRepairMediaUrls] },
+  vite: {
+    plugins: [tailwindcss()],
+    envPrefix: ["PUBLIC_", "R2_", "TENANT", "PAYLOAD_"],
+  },
 });

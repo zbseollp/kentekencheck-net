@@ -1,31 +1,24 @@
+
 # build output
-dist/
-# generated types
-.astro/
-
 # dependencies
-node_modules/
-
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-
 # environment variables
-.env
-.env.production
-
+# generated types
+# jetbrains setting folder
+# lighthouse-rapporten
+# logs
+# lokale wrangler-state
 # macOS-specific files
 .DS_Store
-
-# jetbrains setting folder
+.astro/
+.env
+.env.production
 .idea/
-
-# lokale wrangler-state
 .wrangler/
-
-# lighthouse-rapporten
-lh-report.json
+dist/
 lh-mobile.json
+lh-report.json
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*

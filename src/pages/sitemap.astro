@@ -1,11 +1,10 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getCollection } from "astro:content";
 import { NAV_KENTEKENCHECKS, NAV_WAARDECHECKS, SITE } from "../lib/site";
+import { getMarkdownPosts } from "../lib/posts";
 
-const posts = (await getCollection("blog")).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+// Only list what actually has a page — same filters as /blog/.
+const posts = await getMarkdownPosts();
 
 const NAV_ZOEKEN = [
   { label: "Kenteken zoeken", href: "/zoeken/" },

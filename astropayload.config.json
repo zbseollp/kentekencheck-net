@@ -5,5 +5,14 @@
     "blog"
   ],
   "blogContentPath": "src/content/blog",
-  "blogFileExtension": "mdx"
+  "blogFileExtension": "mdx",
+  "blogImageFields": {
+    "heroImage": "heroImage",
+    "featuredImage": "featuredImage"
+  },
+  "mediaUrlEnv": [
+    "R2_PUBLIC_URL",
+    "PUBLIC_PAYLOAD_URL",
+    "PAYLOAD_URL"
+  ]
 }
