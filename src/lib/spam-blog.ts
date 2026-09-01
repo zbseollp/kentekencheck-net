@@ -4,7 +4,7 @@
  * Two tiers, deliberately separated:
  *
  * - isSpamBlogPost()      hard signals only — payloads that hijack the page:
- *                         document.write, eval(atob(...)), and location
+ *                         document.write, eval of base64-decoded data, and location
  *                         assignments. Safe to filter automatically.
  * - isOffTopicBlogPost()  soft signal — celebrity/gossip filler pushed onto a
  *                         niche site. Reported by scripts/remove-spam-blog.mjs
