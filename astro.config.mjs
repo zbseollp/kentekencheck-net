@@ -5,6 +5,9 @@ import compress from "astro-compress";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 import rehypeRepairMediaUrls from "./src/lib/rehype-repair-media-urls.mjs";
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 export default defineConfig({
   site: "https://kentekencheck.net",

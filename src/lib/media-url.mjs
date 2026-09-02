@@ -30,6 +30,55 @@ const LOCAL_PATH_PREFIXES = [
 /** Media paths Payload owns — these must be rewritten to the R2 base. */
 const PAYLOAD_PATH_PREFIXES = ['/media/', '/api/media/'];
 
+/** Hostnames whose /media/ paths should map to the tenant R2 bucket. */
+const PAYLOAD_MEDIA_HOSTS = ['payload.10beste.com'];
+
+/**
+ * Payload media filenames are often extensionless (pexels332224). Avoid rewriting
+ * ordinary site paths like /blog/ that might appear in broken frontmatter.
+ */
+export function looksLikePayloadFilename(name) {
+  if (!name || name.includes('/')) return false;
+  if (/\.(?:html?|php|aspx?)$/i.test(name)) return false;
+  if (/\.(?:jpe?g|png|gif|webp|avif|svg|bmp|tiff?)$/i.test(name)) return true;
+  return /^(?:pexels|wp-|upload|image|img-|media-)/i.test(name);
+}
+
+/** `{R2_PUBLIC_URL}/tenants/{slug}/{filename}` — the canonical public object URL. */
+export function tenantMediaUrl(filename, env) {
+  const file = String(filename || '')
+    .trim()
+    .replace(/^\/+/, '');
+  if (!file) return null;
+  return `${getPayloadPublicBase(env)}/tenants/${getTenantSlug(env)}/${file}`;
+}
+
+/** `/tenants/<slug>/<file>` → absolute R2 URL (slug preserved when present). */
+function resolveTenantPath(path, env) {
+  const match = path.match(/^\/tenants\/([^/]+)\/(.+)$/);
+  if (!match) return null;
+  const [, slug, file] = match;
+  return `${getPayloadPublicBase(env)}/tenants/${slug}/${file}`;
+}
+
+/** `https://payload…/media/<file>` → tenant R2 URL. */
+function resolvePayloadHostUrl(url, env) {
+  try {
+    const u = new URL(url);
+    if (!PAYLOAD_MEDIA_HOSTS.some((host) => u.hostname === host || u.hostname.endsWith(`.${host}`))) {
+      return null;
+    }
+    const segments = u.pathname.split('/').filter(Boolean);
+    const mediaIdx = segments.findIndex((seg) => seg === 'media');
+    if (mediaIdx >= 0 && segments[mediaIdx + 1]) {
+      return tenantMediaUrl(segments[segments.length - 1], env);
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 function envBag(env) {
   if (env) return env;
   const fromVite =
@@ -191,8 +240,17 @@ export function resolveMediaUrl(input, options = {}) {
   if (!raw) return fallback;
 
   if (raw.startsWith('data:') || raw.startsWith('blob:')) return raw;
-  if (/^https?:\/\//i.test(raw)) return repairTenantR2Url(raw, { env });
-  if (raw.startsWith('//')) return repairTenantR2Url(`https:${raw}`, { env });
+
+  if (/^https?:\/\//i.test(raw)) {
+    return (
+      resolvePayloadHostUrl(raw, env) ||
+      repairTenantR2Url(raw, { env })
+    );
+  }
+  if (raw.startsWith('//')) {
+    const absolute = `https:${raw}`;
+    return resolvePayloadHostUrl(absolute, env) || repairTenantR2Url(absolute, { env });
+  }
 
   const path = raw.startsWith('/') ? raw : `/${raw}`;
 
@@ -201,11 +259,21 @@ export function resolveMediaUrl(input, options = {}) {
     return siteOrigin ? new URL(path, siteOrigin).href : path;
   }
 
+  // Already a tenant object key — always absolute R2 (never site-relative).
+  const tenantPath = resolveTenantPath(path, env);
+  if (tenantPath) return tenantPath;
+
   // Payload-owned media → {base}/tenants/{slug}/{filename}
   if (PAYLOAD_PATH_PREFIXES.some((prefix) => path.startsWith(prefix))) {
     const filename = path.split('/').filter(Boolean).pop();
     if (!filename) return fallback;
-    return `${getPayloadPublicBase(env)}/tenants/${getTenantSlug(env)}/${filename}`;
+    return tenantMediaUrl(filename, env);
+  }
+
+  // Bare Payload filename (pexels332224, photo.jpg, …) with no /media/ prefix.
+  const bare = path.replace(/^\/+/, '');
+  if (!bare.includes('/') && looksLikePayloadFilename(bare)) {
+    return tenantMediaUrl(bare, env);
   }
 
   return siteOrigin ? new URL(path, siteOrigin).href : path;

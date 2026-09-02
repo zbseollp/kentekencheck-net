@@ -10,7 +10,7 @@
  *  - blank out empty-string image fields so they read as "no image"
  */
 import { writeFileSync } from 'node:fs';
-import { resolveMediaUrl } from '../src/lib/media-url.mjs';
+import { resolveMediaUrl, looksLikePayloadFilename } from '../src/lib/media-url.mjs';
 import { BLOG_DIR, exists, listBlogFiles, readPost } from './lib/blog-files.mjs';
 
 const IMAGE_FIELDS = ['featuredImage', 'heroImage', 'image', 'ogImage'];
@@ -25,8 +25,11 @@ function looksLikeImage(value) {
   if (value.startsWith('data:image/')) return true;
   // Payload media, with or without an extension: its R2 objects are not always
   // named with one (…r2.dev/pexels05646 is a real image).
-  if (/^\/(?:media|api\/media)\//i.test(value)) return true;
+  if (/^\/(?:media|api\/media|tenants\/[^/]+)\//i.test(value)) return true;
+  if (/^tenants\/[^/]+\//i.test(value)) return true;
   if (/^https?:\/\/[^/]*(?:r2\.dev|cloudflarestorage\.com)\//i.test(value)) return true;
+  if (/^https?:\/\/[^/]*payload[^/]*\/media\//i.test(value)) return true;
+  if (looksLikePayloadFilename(value.replace(/^\/+/, ''))) return true;
   const withoutQuery = value.split(/[?#]/)[0];
   return /\.(?:jpe?g|png|gif|webp|avif|svg|bmp|tiff?)$/i.test(withoutQuery);
 }

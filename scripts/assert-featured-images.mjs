@@ -24,6 +24,32 @@ if (!bare || !bare.includes('/tenants/kentekencheck-net/')) {
   errors.push(`bare R2 URL must be repaired to tenants/kentekencheck-net (got ${bare})`);
 }
 
+const extensionless = resolveMediaUrl('pexels332224', { fallback: null });
+if (
+  extensionless !==
+  'https://pub-d4024ad3e57841448e0ee58a19abe46b.r2.dev/tenants/kentekencheck-net/pexels332224'
+) {
+  errors.push(`bare filename must resolve to tenants/kentekencheck-net R2 URL (got ${extensionless})`);
+}
+
+const tenantPath = resolveMediaUrl('/tenants/kentekencheck-net/pexels332224', { fallback: null });
+if (
+  tenantPath !==
+  'https://pub-d4024ad3e57841448e0ee58a19abe46b.r2.dev/tenants/kentekencheck-net/pexels332224'
+) {
+  errors.push(`/tenants/<slug>/file must be absolute R2 URL (got ${tenantPath})`);
+}
+
+const payloadHost = resolveMediaUrl('https://payload.10beste.com/media/pexels332224', {
+  fallback: null,
+});
+if (
+  payloadHost !==
+  'https://pub-d4024ad3e57841448e0ee58a19abe46b.r2.dev/tenants/kentekencheck-net/pexels332224'
+) {
+  errors.push(`payload.10beste.com/media/ must rewrite to tenant R2 (got ${payloadHost})`);
+}
+
 const local = resolveMediaUrl('/images/blog-default.svg', { fallback: null });
 if (local !== '/images/blog-default.svg') {
   errors.push(`local /images/ path must stay site-relative (got ${local})`);
