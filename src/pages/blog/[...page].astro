@@ -134,9 +134,19 @@ const pageItems: PageItem[] = Array.from({ length: lastPage }, (_, i) => i + 1).
     background: #fff; border: 1px solid var(--kc-grey-100); border-radius: 12px;
     padding: 1.75rem; text-decoration: none;
     transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; height: 100%;
+    overflow: hidden;
   }
   .blog-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: var(--kc-yellow); }
-  .blog-card-img { width: calc(100% + 3.5rem); margin: -1.75rem -1.75rem 1.25rem; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px 12px 0 0; display: block; }
+  .blog-card-img {
+    width: calc(100% + 3.5rem);
+    margin: -1.75rem -1.75rem 1.25rem;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 12px 12px 0 0;
+    display: block;
+    background: #1a1a20;
+  }
   .blog-card-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
   .blog-card-meta time { font-size: 0.8rem; color: #888890; }
   .blog-cat { background: var(--kc-yellow); color: var(--kc-black); font-family: var(--font-display); font-weight: 700; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.2rem 0.5rem; border-radius: 3px; }

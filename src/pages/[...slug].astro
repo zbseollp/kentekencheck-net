@@ -164,9 +164,11 @@ const schema = {
     </header>
 
     {heroImage && (
-      <figure class="bp-hero-img">
-        <img src={heroImage} alt={heroImageAlt} width="1120" height="630" loading="eager" decoding="async" />
-      </figure>
+      <div class="bp-hero-frame-wrap">
+        <figure class="bp-hero-img">
+          <img src={heroImage} alt={heroImageAlt} width="1120" height="630" loading="eager" decoding="async" />
+        </figure>
+      </div>
     )}
 
     <div class="bp-body">
@@ -207,8 +209,28 @@ const schema = {
   .bp-hero h1 { font-size: clamp(1.75rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 0.75rem; }
   .bp-desc { color: #a0a0a8; font-size: 1.05rem; line-height: 1.65; }
 
-  .bp-hero-img { max-width: 900px; margin: -1px auto 0; padding: 0 1.25rem; }
-  .bp-hero-img img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; border-radius: 0 0 12px 12px; }
+  /* Same content width as .bp-body so the hero sits in one clean frame. */
+  .bp-hero-frame-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 1.25rem 1.25rem 0;
+  }
+  .bp-hero-img {
+    margin: 0;
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #1a1a20;
+    border: 1px solid var(--kc-grey-100, #e8e8ee);
+  }
+  .bp-hero-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
 
   .bp-body { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.25rem 4rem; }
 
@@ -222,7 +244,26 @@ const schema = {
   .prose :global(a) { color: var(--kc-blue); text-decoration: underline; }
   .prose :global(a:hover) { color: var(--kc-yellow-dark); }
   .prose :global(blockquote) { border-left: 3px solid var(--kc-yellow); margin: 1.5rem 0; padding: 0.75rem 1.25rem; background: var(--kc-grey-50); color: #55555d; }
-  .prose :global(img) { max-width: 100%; border-radius: 8px; margin: 1.5rem 0; }
+  .prose :global(img),
+  .prose :global(figure) {
+    display: block;
+    max-width: 100%;
+    margin: 1.5rem 0;
+  }
+  .prose :global(figure) {
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f4f4f6;
+  }
+  .prose :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+  }
+  .prose :global(figure img) {
+    margin: 0;
+    border-radius: 0;
+  }
   .prose :global(code) { background: var(--kc-grey-100); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
   .prose :global(hr) { border: none; border-top: 1px solid var(--kc-grey-100); margin: 2rem 0; }
 
