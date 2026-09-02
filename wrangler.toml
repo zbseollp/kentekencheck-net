@@ -10,3 +10,8 @@ routes = [
   { pattern = "kentekencheck.net/*", custom_domain = true },
   { pattern = "www.kentekencheck.net/*", custom_domain = true },
 ]
+
+[vars]
+PUBLIC_TENANT_SLUG = "kentekencheck-net"
+R2_PUBLIC_URL = "https://pub-d4024ad3e57841448e0ee58a19abe46b.r2.dev"
+PUBLIC_PAYLOAD_API = "https://payload.10beste.com/api"

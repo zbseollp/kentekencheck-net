@@ -17,6 +17,9 @@
 import { writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { resolveMediaUrl } from '../src/lib/media-url.mjs';
 import { BLOG_DIR, exists, listBlogFiles, readField, readPost, slugOf } from './lib/blog-files.mjs';
+import { loadEnvFile } from './load-env.mjs';
+
+loadEnvFile();
 
 const TENANT_SLUG = 'kentekencheck-net';
 const API = (

@@ -1,3 +1,5 @@
+import payloadCache from "../data/payload-posts-cache.json";
+
 const PAYLOAD_API = (
   (typeof import.meta !== "undefined" &&
     (import.meta.env?.PUBLIC_PAYLOAD_API || import.meta.env?.PAYLOAD_URL)) ||
@@ -73,19 +75,69 @@ async function fetchBlogPosts(query: string): Promise<PayloadPost[]> {
   }
 }
 
+type CachedPayloadFile = {
+  posts?: Array<{
+    id: number;
+    title: string;
+    slug: string;
+    description?: string;
+    publishStatus?: PayloadPost["publishStatus"];
+    pubDate?: string;
+    updatedDate?: string;
+    categories?: string[];
+    featuredImage?: { url?: string; alt?: string } | null;
+    heroImage?: { url?: string; alt?: string } | null;
+  }>;
+};
+
+/** Build-time cache — keeps listings + images working without a live API key. */
+function postsFromCache(): PayloadPost[] {
+  const raw = payloadCache as CachedPayloadFile;
+  return (raw.posts ?? [])
+    .filter((post) => post.slug)
+    .map((post) => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      description: post.description ?? "",
+      publishStatus: post.publishStatus ?? "published",
+      pubDate: post.pubDate ?? "",
+      updatedDate: post.updatedDate,
+      categories: post.categories ?? [],
+      featuredImage: post.featuredImage?.url
+        ? { url: post.featuredImage.url, alt: post.featuredImage.alt ?? null }
+        : null,
+      heroImage: post.heroImage?.url
+        ? { url: post.heroImage.url, alt: post.heroImage.alt ?? null }
+        : null,
+    }));
+}
+
+function mergePayloadPosts(apiPosts: PayloadPost[], cachedPosts: PayloadPost[]): PayloadPost[] {
+  const bySlug = new Map<string, PayloadPost>();
+  for (const post of cachedPosts) bySlug.set(post.slug, post);
+  for (const post of apiPosts) bySlug.set(post.slug, post);
+  return [...bySlug.values()].sort(
+    (a, b) => new Date(b.pubDate).valueOf() - new Date(a.pubDate).valueOf(),
+  );
+}
+
 /**
  * Published posts for this tenant. `depth=1` populates hero/featured media so
  * resolveFeaturedImage can read `.url` / `.filename` instead of a bare id.
+ * Falls back to the build-time cache when the API is unreachable or unauthenticated.
  */
 export async function getPayloadPosts(limit = 100): Promise<PayloadPost[]> {
   const params = new URLSearchParams({
     "where[tenant.slug][equals]": TENANT_SLUG,
     "where[publishStatus][equals]": "published",
     sort: "-pubDate",
-    limit: String(limit),
+    limit: String(Math.max(limit, 100)),
     depth: "1",
   });
-  return fetchBlogPosts(params.toString());
+  const fromApi = await fetchBlogPosts(params.toString());
+  const merged = mergePayloadPosts(fromApi, postsFromCache());
+  return merged.slice(0, limit);
 }
 
 export async function getPayloadPost(slug: string): Promise<PayloadPost | null> {
@@ -96,7 +148,8 @@ export async function getPayloadPost(slug: string): Promise<PayloadPost | null> 
     depth: "1",
   });
   const docs = await fetchBlogPosts(params.toString());
-  return docs[0] ?? null;
+  if (docs[0]) return docs[0];
+  return postsFromCache().find((post) => post.slug === slug) ?? null;
 }
 
 // Convert Lexical rich text JSON to HTML

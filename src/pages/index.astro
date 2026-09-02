@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import KentekenForm from "../components/KentekenForm.astro";
+import BlogThumbnail from "../components/BlogThumbnail.astro";
 import { SITE, POPULAR_CHECKS } from "../lib/site";
 import { getAllPosts } from "../lib/posts";
 
@@ -139,14 +140,10 @@ const schema = [
           <li>
             <a href={`/${post.slug}/`} class="kc-blog-card">
               {post.image && (
-                <img
-                  class="kc-blog-card-img"
+                <BlogThumbnail
                   src={post.image}
                   alt={post.imageAlt || post.title}
-                  width="400"
-                  height="225"
-                  loading="lazy"
-                  decoding="async"
+                  variant="card-dark"
                 />
               )}
               <div class="kc-blog-date">
@@ -419,18 +416,6 @@ const schema = [
     transition: border-color 0.18s, transform 0.18s;
     height: 100%;
     overflow: hidden;
-  }
-
-  .kc-blog-card-img {
-    width: calc(100% + 3rem);
-    margin: -1.5rem -1.5rem 1rem;
-    aspect-ratio: 16 / 9;
-    height: auto;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    border-radius: 12px 12px 0 0;
-    background: #1a1a20;
   }
 
   .kc-blog-card:hover {
