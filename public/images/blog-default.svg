@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-label="Kentekencheck.net">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111114"/>
+      <stop offset="100%" stop-color="#2a2a32"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#g)"/>
+  <rect x="80" y="80" width="160" height="160" rx="28" fill="#f5c518"/>
+  <text x="160" y="178" text-anchor="middle" font-family="Montserrat, Arial, sans-serif" font-size="64" font-weight="800" fill="#111114">KC</text>
+  <text x="280" y="160" font-family="Montserrat, Arial, sans-serif" font-size="52" font-weight="800" fill="#ffffff">KENTEKENCHECK.NET</text>
+  <text x="280" y="220" font-family="Inter, Arial, sans-serif" font-size="28" fill="#a0a0a8">Blog</text>
+</svg>

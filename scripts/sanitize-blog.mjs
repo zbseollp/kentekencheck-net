@@ -6,9 +6,11 @@
  *  - blank image fields whose value is not an image at all (a bare page URL),
  *    which would otherwise render as a broken <img>
  *  - normalise WordPress `path "Title"` image scalars down to the path
+ *  - repair bare R2 bucket-root URLs to tenants/<slug>/<file>
  *  - blank out empty-string image fields so they read as "no image"
  */
 import { writeFileSync } from 'node:fs';
+import { resolveMediaUrl } from '../src/lib/media-url.mjs';
 import { BLOG_DIR, exists, listBlogFiles, readPost } from './lib/blog-files.mjs';
 
 const IMAGE_FIELDS = ['featuredImage', 'heroImage', 'image', 'ogImage'];
@@ -32,6 +34,13 @@ function looksLikeImage(value) {
 /** Quote only values YAML would otherwise misread; plain URLs stay unquoted. */
 function needsQuoting(value) {
   return /^[-?:,[\]{}#&*!|>'"%@`]/.test(value) || /:\s/.test(value) || /\s#/.test(value);
+}
+
+/** Rewrite bare bucket-root R2 URLs to tenants/<slug>/<file>. */
+function normalizeImageValue(value) {
+  if (!value) return '';
+  const repaired = resolveMediaUrl(value, { fallback: null });
+  return repaired || value;
 }
 
 if (!exists(BLOG_DIR)) {
@@ -64,17 +73,20 @@ for (const path of listBlogFiles()) {
         const unquoted = value.replace(/^["']|["']$/g, '');
         // `path "Title"` → path (the quotes may arrive backslash-escaped),
         // before deciding whether the value is an image at all
-        const stripped = unquoted.replace(/\\s+\\\\?["'].*$/, '').trim();
+        const stripped = unquoted.replace(/\s+\\?["'].*$/, '').trim();
+        const normalized = normalizeImageValue(stripped);
 
         // Nothing to correct: keep the line byte-for-byte, so a tenant that
         // quotes its frontmatter is not reformatted on every build.
-        if (stripped === unquoted && looksLikeImage(stripped)) return match;
+        if (stripped === unquoted && looksLikeImage(stripped) && normalized === stripped) {
+          return match;
+        }
 
-        const next = !stripped || !looksLikeImage(stripped)
+        const next = !normalized || !looksLikeImage(normalized)
           ? `${head}""`
-          : needsQuoting(stripped)
-            ? `${head}"${stripped}"`
-            : `${head}${stripped}`;
+          : needsQuoting(normalized)
+            ? `${head}"${normalized}"`
+            : `${head}${normalized}`;
         return `${next}${newline}${nextIndented ?? ''}`;
       },
     );

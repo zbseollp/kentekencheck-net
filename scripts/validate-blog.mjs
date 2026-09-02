@@ -38,6 +38,27 @@ for (const path of files) {
   if (!description) warnings.push(`${path}: no description/excerpt`);
 
   if (!post.body.trim()) warnings.push(`${path}: empty body`);
+
+  // Featured/hero health: empty strings are OK (default cover), but a value that
+  // is clearly not an image (a page URL) must never ship — it renders as a
+  // broken <img> on every card.
+  for (const field of ['featuredImage', 'heroImage', 'image', 'ogImage']) {
+    const raw = readField(post.frontmatter, field);
+    if (!raw) continue;
+    const looksLikeFile =
+      raw.startsWith('data:image/') ||
+      /^\/(?:media|api\/media|uploads|images|wp-content)\//i.test(raw) ||
+      /^https?:\/\/[^/]*(?:r2\.dev|cloudflarestorage\.com)\//i.test(raw) ||
+      /\.(?:jpe?g|png|gif|webp|avif|svg)(?:[?#]|$)/i.test(raw);
+    if (!looksLikeFile) {
+      errors.push(`${path}: ${field} is not an image URL ("${raw.slice(0, 80)}")`);
+    } else if (
+      /^https?:\/\/[^/]*(?:r2\.dev|cloudflarestorage\.com)\//i.test(raw) &&
+      !raw.includes('/tenants/')
+    ) {
+      warnings.push(`${path}: ${field} is a bare R2 URL — sanitize should repair it`);
+    }
+  }
 }
 
 for (const warning of warnings) console.warn(`[validate-blog] warn  ${warning}`);

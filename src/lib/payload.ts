@@ -1,15 +1,35 @@
-const PAYLOAD_API = "https://payload.10beste.com/api";
+const PAYLOAD_API = (
+  (typeof import.meta !== "undefined" &&
+    (import.meta.env?.PUBLIC_PAYLOAD_API || import.meta.env?.PAYLOAD_URL)) ||
+  (typeof process !== "undefined" && (process.env?.PUBLIC_PAYLOAD_API || process.env?.PAYLOAD_URL)) ||
+  "https://payload.10beste.com/api"
+).replace(/\/+$/, "");
+
 const TENANT_SLUG = "kentekencheck-net";
+
+/** Media at depth ≥ 1 — or a bare id when the API was called without depth. */
+export type PayloadMedia =
+  | number
+  | string
+  | {
+      id?: number | string;
+      url?: string | null;
+      filename?: string | null;
+      prefix?: string | null;
+      alt?: string | null;
+    }
+  | null;
 
 export interface PayloadPost {
   id: number;
   title: string;
   slug: string;
   description: string;
-  publishStatus: "published" | "draft";
+  publishStatus: "published" | "draft" | "scheduled";
   pubDate: string;
   updatedDate?: string;
-  heroImage?: { url: string; alt?: string } | null;
+  heroImage?: PayloadMedia;
+  featuredImage?: PayloadMedia;
   categories?: string[];
   tags?: string[];
   content?: LexicalContent;
@@ -29,30 +49,54 @@ interface LexicalNode {
   children?: LexicalNode[];
 }
 
-export async function getPayloadPosts(limit = 100): Promise<PayloadPost[]> {
+function authHeaders(): HeadersInit {
+  const key =
+    (typeof import.meta !== "undefined" &&
+      (import.meta.env?.PAYLOAD_API_KEY || import.meta.env?.PUBLIC_PAYLOAD_API_KEY)) ||
+    (typeof process !== "undefined" &&
+      (process.env?.PAYLOAD_API_KEY || process.env?.PUBLIC_PAYLOAD_API_KEY)) ||
+    "";
+  if (!key) return {};
+  return { Authorization: `users API-Key ${key}` };
+}
+
+async function fetchBlogPosts(query: string): Promise<PayloadPost[]> {
   try {
-    const res = await fetch(
-      `${PAYLOAD_API}/blog-posts?where[tenant.slug][equals]=${TENANT_SLUG}&where[publishStatus][equals]=published&sort=-pubDate&limit=${limit}`
-    );
+    const res = await fetch(`${PAYLOAD_API}/blog-posts?${query}`, {
+      headers: authHeaders(),
+    });
     if (!res.ok) return [];
-    const data = await res.json() as { docs: PayloadPost[] };
+    const data = (await res.json()) as { docs?: PayloadPost[] };
     return data.docs ?? [];
   } catch {
     return [];
   }
 }
 
+/**
+ * Published posts for this tenant. `depth=1` populates hero/featured media so
+ * resolveFeaturedImage can read `.url` / `.filename` instead of a bare id.
+ */
+export async function getPayloadPosts(limit = 100): Promise<PayloadPost[]> {
+  const params = new URLSearchParams({
+    "where[tenant.slug][equals]": TENANT_SLUG,
+    "where[publishStatus][equals]": "published",
+    sort: "-pubDate",
+    limit: String(limit),
+    depth: "1",
+  });
+  return fetchBlogPosts(params.toString());
+}
+
 export async function getPayloadPost(slug: string): Promise<PayloadPost | null> {
-  try {
-    const res = await fetch(
-      `${PAYLOAD_API}/blog-posts?where[tenant.slug][equals]=${TENANT_SLUG}&where[slug][equals]=${slug}&limit=1`
-    );
-    if (!res.ok) return null;
-    const data = await res.json() as { docs: PayloadPost[] };
-    return data.docs?.[0] ?? null;
-  } catch {
-    return null;
-  }
+  const params = new URLSearchParams({
+    "where[tenant.slug][equals]": TENANT_SLUG,
+    "where[slug][equals]": slug,
+    limit: "1",
+    depth: "1",
+  });
+  const docs = await fetchBlogPosts(params.toString());
+  return docs[0] ?? null;
 }
 
 // Convert Lexical rich text JSON to HTML

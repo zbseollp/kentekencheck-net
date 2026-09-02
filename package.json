@@ -6,7 +6,8 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "prepare:blog": "node scripts/remove-spam-blog.mjs && node scripts/sanitize-blog.mjs && node scripts/validate-blog.mjs",
+    "prepare:blog": "node scripts/remove-spam-blog.mjs && node scripts/sync-featured-images-from-payload.mjs && node scripts/sanitize-blog.mjs && node scripts/validate-blog.mjs && node scripts/assert-featured-images.mjs",
+    "sync:images": "node scripts/sync-featured-images-from-payload.mjs",
     "dev": "npm run prepare:blog && astro dev",
     "build": "npm run prepare:blog && astro build",
     "preview": "astro preview",

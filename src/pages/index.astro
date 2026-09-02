@@ -2,10 +2,10 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import KentekenForm from "../components/KentekenForm.astro";
 import { SITE, POPULAR_CHECKS } from "../lib/site";
-import { getMarkdownPosts } from "../lib/posts";
+import { getAllPosts } from "../lib/posts";
 
-// Same publish filters and ordering as /blog/ — see src/lib/posts.ts.
-const recentPosts = (await getMarkdownPosts()).slice(0, 6);
+// Same publish filters, ordering, and featured-image resolution as /blog/.
+const recentPosts = (await getAllPosts(50)).slice(0, 6);
 
 const schema = [
   {
@@ -137,14 +137,25 @@ const schema = [
       <ul class="kc-blog-grid" role="list">
         {recentPosts.map((post) => (
           <li>
-            <a href={`/${post.id}/`} class="kc-blog-card">
+            <a href={`/${post.slug}/`} class="kc-blog-card">
+              {post.image && (
+                <img
+                  class="kc-blog-card-img"
+                  src={post.image}
+                  alt={post.imageAlt || post.title}
+                  width="400"
+                  height="225"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
               <div class="kc-blog-date">
-                <time datetime={post.data.pubDate.toISOString()}>
-                  {post.data.pubDate.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}
+                <time datetime={post.pubDate.toISOString()}>
+                  {post.pubDate.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}
                 </time>
               </div>
-              <h3>{post.data.title}</h3>
-              {post.data.description && <p class="kc-blog-desc">{post.data.description}</p>}
+              <h3>{post.title}</h3>
+              {post.description && <p class="kc-blog-desc">{post.description}</p>}
               <span class="kc-blog-meer">Lees meer →</span>
             </a>
           </li>
@@ -407,6 +418,17 @@ const schema = [
     text-decoration: none;
     transition: border-color 0.18s, transform 0.18s;
     height: 100%;
+    overflow: hidden;
+  }
+
+  .kc-blog-card-img {
+    width: calc(100% + 3rem);
+    margin: -1.5rem -1.5rem 1rem;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px 12px 0 0;
+    background: #1a1a20;
   }
 
   .kc-blog-card:hover {

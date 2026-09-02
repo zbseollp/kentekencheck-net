@@ -7,8 +7,8 @@
  */
 import { resolveMediaUrl, toAbsoluteUrl } from './media-url.mjs';
 
-/** Optional site-wide placeholder; null keeps cards image-less instead of broken. */
-export const DEFAULT_BLOG_IMAGE: string | null = null;
+/** Site placeholder when a post has no Payload/MD featured or hero image. */
+export const DEFAULT_BLOG_IMAGE: string | null = '/images/blog-default.svg';
 
 type ImageLike = unknown;
 

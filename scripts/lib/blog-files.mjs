@@ -37,7 +37,8 @@ export function readField(frontmatter, field) {
 }
 
 export function slugOf(path) {
-  return path.split('/').pop().replace(/\.mdx?$/, '');
+  const file = path.split(/[/\\]/).pop() || path;
+  return file.replace(/\.mdx?$/, '');
 }
 
 export function readPost(path) {

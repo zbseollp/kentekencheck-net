@@ -37,7 +37,9 @@ const blog = defineCollection({
     .transform((data) => ({
       ...data,
       description: data.description ?? data.excerpt ?? data.metaDescription ?? "",
-      pubDate: data.pubDate ?? data.date ?? new Date(),
+      // Fall back to epoch (not `new Date()`) so undated posts sort to the
+      // bottom of newest-first listings instead of floating to the top.
+      pubDate: data.pubDate ?? data.date ?? new Date(0),
     })),
 });
 

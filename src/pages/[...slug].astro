@@ -33,14 +33,59 @@ let postData: PostData | null = null;
 
 if (mdEntry) {
   const { Content } = await render(mdEntry);
+  let heroImage = resolveFeaturedImage(mdEntry.data, mdEntry.body, { fallback: null });
+  let heroImageAlt = resolveFeaturedImageAlt(mdEntry.data, mdEntry.data.title);
+  let ogImage = resolveOgImage(mdEntry.data, mdEntry.body, SITE.url, { fallback: null });
+
+  // Markdown owns the body, but featured/hero often live only in Payload after
+  // a CMS image upload — pull those when the MD file has none.
+  if (!heroImage) {
+    const payloadPost = await getPayloadPost(slug);
+    if (payloadPost) {
+      heroImage = resolveFeaturedImage(
+        {
+          featuredImage: payloadPost.featuredImage,
+          heroImage: payloadPost.heroImage,
+          title: payloadPost.title,
+        },
+        undefined,
+        { fallback: null },
+      );
+      if (heroImage) {
+        heroImageAlt = resolveFeaturedImageAlt(
+          {
+            featuredImage: payloadPost.featuredImage,
+            heroImage: payloadPost.heroImage,
+            title: payloadPost.title,
+          },
+          mdEntry.data.title,
+        );
+        ogImage = resolveOgImage(
+          {
+            featuredImage: payloadPost.featuredImage,
+            heroImage: payloadPost.heroImage,
+          },
+          undefined,
+          SITE.url,
+          { fallback: null },
+        );
+      }
+    }
+  }
+
+  if (!heroImage) {
+    heroImage = resolveFeaturedImage(mdEntry.data, mdEntry.body);
+    ogImage = resolveOgImage(mdEntry.data, mdEntry.body, SITE.url);
+  }
+
   postData = {
     title: mdEntry.data.title,
     description: mdEntry.data.description || excerptFromBody(mdEntry.body),
     pubDate: mdEntry.data.pubDate,
     categories: mdEntry.data.categories ?? [],
-    heroImage: resolveFeaturedImage(mdEntry.data, mdEntry.body),
-    heroImageAlt: resolveFeaturedImageAlt(mdEntry.data, mdEntry.data.title),
-    ogImage: resolveOgImage(mdEntry.data, mdEntry.body, SITE.url),
+    heroImage,
+    heroImageAlt,
+    ogImage,
     htmlContent: null,
     MdContent: Content,
     relatedPosts: allPosts
@@ -56,9 +101,27 @@ if (mdEntry) {
     description: payloadPost.description ?? "",
     pubDate: new Date(payloadPost.pubDate),
     categories: payloadPost.categories ?? [],
-    heroImage: resolveFeaturedImage(payloadPost as never),
-    heroImageAlt: payloadPost.heroImage?.alt ?? payloadPost.title,
-    ogImage: resolveOgImage(payloadPost as never, undefined, SITE.url),
+    heroImage: resolveFeaturedImage({
+      featuredImage: payloadPost.featuredImage,
+      heroImage: payloadPost.heroImage,
+      title: payloadPost.title,
+    }),
+    heroImageAlt: resolveFeaturedImageAlt(
+      {
+        featuredImage: payloadPost.featuredImage,
+        heroImage: payloadPost.heroImage,
+        title: payloadPost.title,
+      },
+      payloadPost.title,
+    ),
+    ogImage: resolveOgImage(
+      {
+        featuredImage: payloadPost.featuredImage,
+        heroImage: payloadPost.heroImage,
+      },
+      undefined,
+      SITE.url,
+    ),
     // Payload's Lexical HTML carries raw /media/... sources.
     htmlContent: repairMediaUrlsInHtml(lexicalToHtml(payloadPost.content)),
     MdContent: null,

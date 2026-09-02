@@ -9,9 +9,8 @@ const pageSize = 24;
 const pageParam = parseInt(Astro.url.searchParams.get("p") ?? "1");
 const currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
 
-// Markdown + Payload merged newest-first, with the same publish filters the
-// article routes use — see src/lib/posts.ts.
-const allPosts = await getAllPosts(200);
+// Markdown + Payload merged newest-first (pubDate descending). See posts.ts.
+const allPosts = await getAllPosts(500);
 
 const total = allPosts.length;
 const lastPage = Math.max(1, Math.ceil(total / pageSize));
