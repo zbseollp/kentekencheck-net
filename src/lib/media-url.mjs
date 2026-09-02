@@ -19,13 +19,16 @@ const LOCAL_PATH_PREFIXES = [
   '/images/',
   '/assets/',
   '/wp-content/',
+  // WordPress upload path. Several tenants serve these straight from public/,
+  // so it must NOT be rewritten to R2 — doing so 404s every migrated image.
+  '/uploads/',
   '/_astro/',
   '/favicon',
   '/fonts/',
 ];
 
 /** Media paths Payload owns — these must be rewritten to the R2 base. */
-const PAYLOAD_PATH_PREFIXES = ['/media/', '/api/media/', '/uploads/'];
+const PAYLOAD_PATH_PREFIXES = ['/media/', '/api/media/'];
 
 function envBag(env) {
   if (env) return env;
@@ -86,8 +89,10 @@ export function repairTenantR2Url(url, options = {}) {
     if (segments.length === 0) return url;
     if (segments[0] === 'tenants') return url;
 
-    // Bare object at bucket root: /filename.ext
-    if (segments.length === 1 && /\.[a-z0-9]{2,8}$/i.test(decodeURIComponent(segments[0]))) {
+    // Bare object at the bucket root. Payload's uploads keep their extension
+    // most of the time but not always (…r2.dev/pexels05646 is a real object at
+    // …/tenants/<slug>/pexels05646), so do not require one.
+    if (segments.length === 1) {
       u.pathname = `/tenants/${getTenantSlug(options.env)}/${segments[0]}`;
       return u.toString();
     }
